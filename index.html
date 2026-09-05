@@ -85,19 +85,27 @@
       background: rgba(255, 0, 0, .3);
     }
 
-    .solution {
+    .working {
       margin-top: 1rem;
       padding: 1rem;
       border: 1px solid #999;
     }
 
-    .solution ol {
-      padding-left: 1.5rem;
+    .working h3 {
+      margin-top: 0;
     }
 
-    .solution code {
+    .working-steps p {
+      margin-block: 0.25rem;
+    }
+
+    .working-steps code {
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       white-space: normal;
+    }
+
+    .working-note {
+      margin-block: 0.75rem;
     }
 
     .hidden {
@@ -130,7 +138,7 @@
           name="addition-answer"
           inputmode="numeric"
           autocomplete="off"
-          aria-describedby="addition-feedback"
+          aria-describedby="addition-question addition-feedback"
         >
 
         <div>
@@ -154,7 +162,7 @@
           name="times-answer"
           inputmode="numeric"
           autocomplete="off"
-          aria-describedby="times-feedback"
+          aria-describedby="times-question times-feedback"
         >
 
         <div>
@@ -187,22 +195,20 @@
           name="bodmas-answer"
           inputmode="numeric"
           autocomplete="off"
-          aria-describedby="bodmas-feedback"
+          aria-describedby="bodmas-question bodmas-feedback"
         >
 
         <div>
           <button type="submit">Review</button>
           <button type="button" id="bodmas-new">New question</button>
-          <button type="button" id="bodmas-solution" class="hidden">Show solution</button>
+        </div>
+
+        <div id="bodmas-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="bodmas-steps" class="working-steps"></div>
         </div>
 
         <p id="bodmas-feedback" class="feedback" aria-live="polite"></p>
-
-        <div id="bodmas-worked-solution" class="solution hidden" tabindex="-1">
-          <h3>Worked solution</h3>
-          <ol id="bodmas-steps"></ol>
-          <p><strong id="bodmas-final-answer"></strong></p>
-        </div>
       </form>
     </section>
   </main>
@@ -247,12 +253,15 @@
 
         let current = null;
 
-        function newQuestion() {
+        function newQuestion(moveFocus = false) {
           current = generator();
           question.textContent = current.text;
           answer.value = "";
           setFeedback(feedback, "");
-          answer.focus();
+
+          if (moveFocus) {
+            answer.focus();
+          }
         }
 
         form.addEventListener("submit", (event) => {
@@ -274,9 +283,11 @@
           }
         });
 
-        newButton.addEventListener("click", newQuestion);
+        newButton.addEventListener("click", () => {
+          newQuestion(true);
+        });
 
-        newQuestion();
+        newQuestion(false);
       }
 
       setupSimpleTest({
@@ -334,14 +345,15 @@
             const c = randomInt(2, 9);
             const product = b * c;
             const answer = a + product;
+            const expression = `${a} + ${b} × ${c}`;
 
             return {
-              text: `${a} + ${b} × ${c} = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Multiplication: ${b} × ${c} = ${product}`,
-                `${a} + ${product}`,
-                `Addition: ${a} + ${product} = ${answer}`
+              working: [
+                { text: expression },
+                { text: `${a} + ${product}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           },
@@ -353,14 +365,15 @@
             const dividend = divisor * quotient;
             const multiplier = randomInt(2, 6);
             const product = quotient * multiplier;
+            const expression = `${dividend} ÷ ${divisor} × ${multiplier}`;
 
             return {
-              text: `${dividend} ÷ ${divisor} × ${multiplier} = ?`,
+              text: `${expression} = ?`,
               answer: product,
-              steps: [
-                `Division: ${dividend} ÷ ${divisor} = ${quotient}`,
-                `${quotient} × ${multiplier}`,
-                `Multiplication: ${quotient} × ${multiplier} = ${product}`
+              working: [
+                { text: expression },
+                { text: `${quotient} × ${multiplier}`, equals: true },
+                { text: `${product}`, equals: true }
               ]
             };
           },
@@ -374,16 +387,16 @@
             const dividend = bracket * quotient;
             const add = randomInt(2, 12);
             const answer = quotient + add;
+            const expression = `${dividend} ÷ (${x} + ${y}) + ${add}`;
 
             return {
-              text: `${dividend} ÷ (${x} + ${y}) + ${add} = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Brackets: ${x} + ${y} = ${bracket}`,
-                `${dividend} ÷ ${bracket} + ${add}`,
-                `Division: ${dividend} ÷ ${bracket} = ${quotient}`,
-                `${quotient} + ${add}`,
-                `Addition: ${quotient} + ${add} = ${answer}`
+              working: [
+                { text: expression },
+                { text: `${dividend} ÷ ${bracket} + ${add}`, equals: true },
+                { text: `${quotient} + ${add}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           },
@@ -396,42 +409,49 @@
             const add = randomInt(2, 15);
             const product = square * multiplier;
             const answer = add + product;
+            const expression = `${add} + ${base}² × ${multiplier}`;
 
             return {
-              text: `${add} + ${base}² × ${multiplier} = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Orders: ${base}² = ${base} × ${base} = ${square}`,
-                `${add} + ${square} × ${multiplier}`,
-                `Multiplication: ${square} × ${multiplier} = ${product}`,
-                `${add} + ${product}`,
-                `Addition: ${add} + ${product} = ${answer}`
+              working: [
+                { text: expression },
+                { text: `${base}² = ${base} × ${base} = ${square}`, note: true },
+                { text: `${add} + ${square} × ${multiplier}`, equals: true },
+                { text: `${add} + ${product}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           },
 
-          // Cube + division + subtraction
+          // Cube + division + subtraction + addition
           () => {
             const base = randomInt(2, 3);
             const cube = base * base * base;
             const divisor = randomInt(2, 6);
             const quotient = randomInt(4, 12);
             const dividend = divisor * quotient;
-
-            let subtraction = randomInt(1, Math.max(1, quotient - 1));
-            let answer = quotient - subtraction + cube;
+            const subtraction = randomInt(1, Math.max(1, quotient - 1));
+            const afterSubtraction = quotient - subtraction;
+            const answer = afterSubtraction + cube;
+            const expression = `${dividend} ÷ ${divisor} - ${subtraction} + ${base}³`;
 
             return {
-              text: `${dividend} ÷ ${divisor} - ${subtraction} + ${base}³ = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Orders: ${base}³ = ${base} × ${base} × ${base} = ${cube}`,
-                `${dividend} ÷ ${divisor} - ${subtraction} + ${cube}`,
-                `Division: ${dividend} ÷ ${divisor} = ${quotient}`,
-                `${quotient} - ${subtraction} + ${cube}`,
-                `Subtraction: ${quotient} - ${subtraction} = ${quotient - subtraction}`,
-                `${quotient - subtraction} + ${cube}`,
-                `Addition: ${quotient - subtraction} + ${cube} = ${answer}`
+              working: [
+                { text: expression },
+                {
+                  text: `${base}³ = ${base} × ${base} × ${base} = ${cube}`,
+                  note: true
+                },
+                {
+                  text: `${dividend} ÷ ${divisor} - ${subtraction} + ${cube}`,
+                  equals: true
+                },
+                { text: `${quotient} - ${subtraction} + ${cube}`, equals: true },
+                { text: `${afterSubtraction} + ${cube}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           },
@@ -443,16 +463,20 @@
             const add = randomInt(2, 12);
             const product = item.root * multiplier;
             const answer = add + product;
+            const expression = `${add} + √${item.square} × ${multiplier}`;
 
             return {
-              text: `${add} + √${item.square} × ${multiplier} = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Orders: √${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
-                `${add} + ${item.root} × ${multiplier}`,
-                `Multiplication: ${item.root} × ${multiplier} = ${product}`,
-                `${add} + ${product}`,
-                `Addition: ${add} + ${product} = ${answer}`
+              working: [
+                { text: expression },
+                {
+                  text: `√${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
+                  note: true
+                },
+                { text: `${add} + ${item.root} × ${multiplier}`, equals: true },
+                { text: `${add} + ${product}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           },
@@ -470,18 +494,21 @@
             const add = randomInt(2, 10);
             const product = item.root * multiplier;
             const answer = add + product;
+            const expression = `${add} + √(${item.a} + ${item.b}) × ${multiplier}`;
 
             return {
-              text: `${add} + √(${item.a} + ${item.b}) × ${multiplier} = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Brackets: ${item.a} + ${item.b} = ${item.square}`,
-                `${add} + √${item.square} × ${multiplier}`,
-                `Orders: √${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
-                `${add} + ${item.root} × ${multiplier}`,
-                `Multiplication: ${item.root} × ${multiplier} = ${product}`,
-                `${add} + ${product}`,
-                `Addition: ${add} + ${product} = ${answer}`
+              working: [
+                { text: expression },
+                { text: `${add} + √${item.square} × ${multiplier}`, equals: true },
+                {
+                  text: `√${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
+                  note: true
+                },
+                { text: `${add} + ${item.root} × ${multiplier}`, equals: true },
+                { text: `${add} + ${product}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           },
@@ -501,23 +528,38 @@
             const product = square * multiplier;
 
             const subtract = randomInt(1, Math.min(8, quotient + product - 1));
-            const answer = quotient + product - subtract;
+            const afterAddition = quotient + product;
+            const answer = afterAddition - subtract;
+            const expression =
+              `${dividend} ÷ (${x} + ${y}) + ${base}² × ${multiplier} - ${subtract}`;
 
             return {
-              text: `${dividend} ÷ (${x} + ${y}) + ${base}² × ${multiplier} - ${subtract} = ?`,
+              text: `${expression} = ?`,
               answer,
-              steps: [
-                `Brackets: ${x} + ${y} = ${bracket}`,
-                `${dividend} ÷ ${bracket} + ${base}² × ${multiplier} - ${subtract}`,
-                `Orders: ${base}² = ${base} × ${base} = ${square}`,
-                `${dividend} ÷ ${bracket} + ${square} × ${multiplier} - ${subtract}`,
-                `Division: ${dividend} ÷ ${bracket} = ${quotient}`,
-                `${quotient} + ${square} × ${multiplier} - ${subtract}`,
-                `Multiplication: ${square} × ${multiplier} = ${product}`,
-                `${quotient} + ${product} - ${subtract}`,
-                `Addition: ${quotient} + ${product} = ${quotient + product}`,
-                `${quotient + product} - ${subtract}`,
-                `Subtraction: ${quotient + product} - ${subtract} = ${answer}`
+              working: [
+                { text: expression },
+                {
+                  text: `${dividend} ÷ ${bracket} + ${base}² × ${multiplier} - ${subtract}`,
+                  equals: true
+                },
+                {
+                  text: `${base}² = ${base} × ${base} = ${square}`,
+                  note: true
+                },
+                {
+                  text: `${dividend} ÷ ${bracket} + ${square} × ${multiplier} - ${subtract}`,
+                  equals: true
+                },
+                {
+                  text: `${quotient} + ${square} × ${multiplier} - ${subtract}`,
+                  equals: true
+                },
+                {
+                  text: `${quotient} + ${product} - ${subtract}`,
+                  equals: true
+                },
+                { text: `${afterAddition} - ${subtract}`, equals: true },
+                { text: `${answer}`, equals: true }
               ]
             };
           }
@@ -529,29 +571,48 @@
       const bodmasAnswer = document.getElementById("bodmas-answer");
       const bodmasFeedback = document.getElementById("bodmas-feedback");
       const bodmasNew = document.getElementById("bodmas-new");
-      const bodmasSolutionButton = document.getElementById("bodmas-solution");
-      const workedSolution = document.getElementById("bodmas-worked-solution");
+      const bodmasWorking = document.getElementById("bodmas-working");
       const bodmasSteps = document.getElementById("bodmas-steps");
-      const bodmasFinalAnswer = document.getElementById("bodmas-final-answer");
 
       let currentBodmas = null;
 
-      function hideSolution() {
-        workedSolution.classList.add("hidden");
-        bodmasSolutionButton.classList.add("hidden");
+      function hideWorking() {
+        bodmasWorking.classList.add("hidden");
         bodmasSteps.replaceChildren();
-        bodmasFinalAnswer.textContent = "";
       }
 
-      function newBodmasQuestion() {
+      function showWorking() {
+        bodmasSteps.replaceChildren();
+
+        for (const step of currentBodmas.working) {
+          const p = document.createElement("p");
+          const code = document.createElement("code");
+
+          code.textContent = step.equals ? `= ${step.text}` : step.text;
+
+          if (step.note) {
+            p.classList.add("working-note");
+          }
+
+          p.appendChild(code);
+          bodmasSteps.appendChild(p);
+        }
+
+        bodmasWorking.classList.remove("hidden");
+      }
+
+      function newBodmasQuestion(moveFocus = false) {
         const generator = pick(bodmasGenerators());
         currentBodmas = generator();
 
         bodmasQuestion.textContent = currentBodmas.text;
         bodmasAnswer.value = "";
         setFeedback(bodmasFeedback, "");
-        hideSolution();
-        bodmasAnswer.focus();
+        hideWorking();
+
+        if (moveFocus) {
+          bodmasAnswer.focus();
+        }
       }
 
       bodmasForm.addEventListener("submit", (event) => {
@@ -561,43 +622,30 @@
 
         if (userAnswer === null) {
           setFeedback(bodmasFeedback, "Enter a number first.");
+          hideWorking();
           bodmasAnswer.focus();
           return;
         }
 
+        showWorking();
+
         if (userAnswer === currentBodmas.answer) {
           setFeedback(bodmasFeedback, "Correct.", "pass");
-          bodmasSolutionButton.classList.add("hidden");
         } else {
           setFeedback(
             bodmasFeedback,
-            "Incorrect. Try again, or show the worked solution.",
+            `Incorrect. The correct answer is ${currentBodmas.answer}.`,
             "fail"
           );
-          bodmasSolutionButton.classList.remove("hidden");
           bodmasAnswer.select();
         }
       });
 
-      bodmasSolutionButton.addEventListener("click", () => {
-        bodmasSteps.replaceChildren();
-
-        for (const step of currentBodmas.steps) {
-          const li = document.createElement("li");
-          const code = document.createElement("code");
-          code.textContent = step;
-          li.appendChild(code);
-          bodmasSteps.appendChild(li);
-        }
-
-        bodmasFinalAnswer.textContent = `Answer: ${currentBodmas.answer}`;
-        workedSolution.classList.remove("hidden");
-        workedSolution.focus();
+      bodmasNew.addEventListener("click", () => {
+        newBodmasQuestion(true);
       });
 
-      bodmasNew.addEventListener("click", newBodmasQuestion);
-
-      newBodmasQuestion();
+      newBodmasQuestion(false);
     })();
   </script>
 </body>
