@@ -73,6 +73,18 @@
       font-weight: 700;
     }
 
+    .feedback:not(:empty) {
+      padding: 1em;
+    }
+
+    .feedback.pass {
+      background: rgba(0, 255, 0, .3);
+    }
+
+    .feedback.fail {
+      background: rgba(255, 0, 0, .3);
+    }
+
     .solution {
       margin-top: 1rem;
       padding: 1rem;
@@ -210,6 +222,15 @@
         return Number.isFinite(number) ? number : null;
       };
 
+      const setFeedback = (element, message, state = null) => {
+        element.textContent = message;
+        element.classList.remove("pass", "fail");
+
+        if (state) {
+          element.classList.add(state);
+        }
+      };
+
       function setupSimpleTest({
         formId,
         questionId,
@@ -230,7 +251,7 @@
           current = generator();
           question.textContent = current.text;
           answer.value = "";
-          feedback.textContent = "";
+          setFeedback(feedback, "");
           answer.focus();
         }
 
@@ -240,15 +261,15 @@
           const userAnswer = normaliseNumber(answer.value);
 
           if (userAnswer === null) {
-            feedback.textContent = "Enter a number first.";
+            setFeedback(feedback, "Enter a number first.");
             answer.focus();
             return;
           }
 
           if (userAnswer === current.answer) {
-            feedback.textContent = "Correct.";
+            setFeedback(feedback, "Correct.", "pass");
           } else {
-            feedback.textContent = "Incorrect. Try again.";
+            setFeedback(feedback, "Incorrect. Try again.", "fail");
             answer.select();
           }
         });
@@ -528,7 +549,7 @@
 
         bodmasQuestion.textContent = currentBodmas.text;
         bodmasAnswer.value = "";
-        bodmasFeedback.textContent = "";
+        setFeedback(bodmasFeedback, "");
         hideSolution();
         bodmasAnswer.focus();
       }
@@ -539,16 +560,20 @@
         const userAnswer = normaliseNumber(bodmasAnswer.value);
 
         if (userAnswer === null) {
-          bodmasFeedback.textContent = "Enter a number first.";
+          setFeedback(bodmasFeedback, "Enter a number first.");
           bodmasAnswer.focus();
           return;
         }
 
         if (userAnswer === currentBodmas.answer) {
-          bodmasFeedback.textContent = "Correct.";
+          setFeedback(bodmasFeedback, "Correct.", "pass");
           bodmasSolutionButton.classList.add("hidden");
         } else {
-          bodmasFeedback.textContent = "Incorrect. Try again, or show the worked solution.";
+          setFeedback(
+            bodmasFeedback,
+            "Incorrect. Try again, or show the worked solution.",
+            "fail"
+          );
           bodmasSolutionButton.classList.remove("hidden");
           bodmasAnswer.select();
         }
