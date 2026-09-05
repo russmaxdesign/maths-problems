@@ -15,10 +15,13 @@
       max-width: 52rem;
       margin: 0 auto;
       padding: 1rem;
+      color: #000;
+      background: #fff;
     }
 
     h1, h2 {
       line-height: 1.2;
+      color: #151B54;
     }
 
     section {
@@ -30,6 +33,69 @@
       font-size: 1.5rem;
       font-weight: 700;
       margin-block: 0.75rem 1rem;
+      /* Extra word spacing separates the numbers from the symbols between
+         them, which is the pairing that is easiest to misread. It also
+         gives the order badges room so they do not crowd each other. */
+      word-spacing: 0.25em;
+      color: #2554C7;
+    }
+
+    /* Each operator reserves its own badge space via padding, so the line
+       box grows to fit. This keeps the space reserved whether or not the
+       hint is showing (no layout shift on reveal) and, unlike padding on
+       the paragraph, it still works when a long expression wraps. */
+    .op {
+      display: inline-block;
+      position: relative;
+      padding-bottom: 1.2rem;
+    }
+
+    /* Kept deliberately narrow. Operators such as the ² and × in "4² × 3"
+       sit close together, so a wide badge would collide with its neighbour. */
+    .badge {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.1rem 0.25rem;
+      border-radius: 0.6rem;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.2;
+      word-spacing: normal;
+      text-align: center;
+      visibility: hidden;
+    }
+
+    .show-badges .badge {
+      visibility: visible;
+    }
+
+    /* Windows high contrast drops the badge background, so restore an
+       outline to keep the badge distinct from the expression above it. */
+    @media (forced-colors: active) {
+      .badge {
+        border: 1px solid;
+      }
+    }
+
+    .hint {
+      margin: 0 0 1rem;
+    }
+
+    .hint h3 {
+      margin-top: 0;
+    }
+
+    .hint ol {
+      margin-bottom: 0;
+      padding-left: 1.5rem;
+    }
+
+    .hint li {
+      margin-block: 0.25rem;
     }
 
     label {
@@ -66,6 +132,28 @@
     button:focus {
       outline: 3px solid currentColor;
       outline-offset: 3px;
+    }
+
+    /* Still a button, because it performs an action rather than navigating.
+       Styled as a link so it reads as lighter than Review and New question,
+       which act on the exercise rather than on the expression above it. */
+    .link-button {
+      display: inline-block;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      padding: 0.4rem 0;
+      border: 0;
+      border-radius: 0;
+      background: none;
+      color: #0b3fa8;
+      text-align: left;
+      text-decoration: underline;
+      text-underline-offset: 0.2em;
+    }
+
+    .link-button:hover {
+      background: none;
+      text-decoration-thickness: 0.15em;
     }
 
     .feedback {
@@ -114,6 +202,10 @@
 
     .note {
       max-width: 42rem;
+    }
+
+    .instructions {
+      margin-bottom: 1.5rem;
     }
   </style>
 </head>
@@ -179,7 +271,7 @@
 
       <p>Order of priority:</p>
 
-      <ul>
+      <ul class="instructions">
         <li><strong>Brackets</strong>: ( )</li>
         <li><strong>Orders</strong>: powers (e.g. 3²) and roots (e.g. √9)</li>
         <li><strong>Division and Multiplication</strong>: working left to right</li>
@@ -188,6 +280,15 @@
 
       <form id="bodmas-form">
         <p id="bodmas-question" class="question"></p>
+
+        <button type="button" id="bodmas-hint" class="link-button">
+          Hint to show calculation order
+        </button>
+
+        <div id="bodmas-hint-panel" class="hint hidden" aria-live="polite">
+          <h3>Order of operations</h3>
+          <ol id="bodmas-hint-steps"></ol>
+        </div>
 
         <label for="bodmas-answer">Your answer</label>
         <input
@@ -350,6 +451,14 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${a} ` },
+                { t: "+", order: 2 },
+                { t: ` ${b} ` },
+                { t: "×", order: 1 },
+                { t: ` ${c}` }
+              ],
+              hint: ["The multiplication", "The addition"],
               working: [
                 { text: expression },
                 { text: `${a} + ${product}`, equals: true },
@@ -370,6 +479,14 @@
             return {
               text: `${expression} = ?`,
               answer: product,
+              tokens: [
+                { t: `${dividend} ` },
+                { t: "÷", order: 1 },
+                { t: ` ${divisor} ` },
+                { t: "×", order: 2 },
+                { t: ` ${multiplier}` }
+              ],
+              hint: ["The division", "The multiplication"],
               working: [
                 { text: expression },
                 { text: `${quotient} × ${multiplier}`, equals: true },
@@ -392,6 +509,20 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${dividend} ` },
+                { t: "÷", order: 2 },
+                { t: ` (${x} ` },
+                { t: "+", order: 1 },
+                { t: ` ${y}) ` },
+                { t: "+", order: 3 },
+                { t: ` ${add}` }
+              ],
+              hint: [
+                "The addition inside the brackets",
+                "The division",
+                "The addition after the brackets"
+              ],
               working: [
                 { text: expression },
                 { text: `${dividend} ÷ ${bracket} + ${add}`, equals: true },
@@ -414,6 +545,20 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${add} ` },
+                { t: "+", order: 3 },
+                { t: ` ${base}` },
+                { t: "²", order: 1 },
+                { t: " " },
+                { t: "×", order: 2 },
+                { t: ` ${multiplier}` }
+              ],
+              hint: [
+                `The power, ${base}²`,
+                "The multiplication",
+                "The addition"
+              ],
               working: [
                 { text: expression },
                 { text: `${base}² = ${base} × ${base} = ${square}`, note: true },
@@ -439,6 +584,22 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${dividend} ` },
+                { t: "÷", order: 2 },
+                { t: ` ${divisor} ` },
+                { t: "-", order: 3 },
+                { t: ` ${subtraction} ` },
+                { t: "+", order: 4 },
+                { t: ` ${base}` },
+                { t: "³", order: 1 }
+              ],
+              hint: [
+                `The power, ${base}³`,
+                "The division",
+                "The subtraction",
+                "The addition"
+              ],
               working: [
                 { text: expression },
                 {
@@ -468,6 +629,20 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${add} ` },
+                { t: "+", order: 3 },
+                { t: " " },
+                { t: "√", order: 1 },
+                { t: `${item.square} ` },
+                { t: "×", order: 2 },
+                { t: ` ${multiplier}` }
+              ],
+              hint: [
+                `The root, √${item.square}`,
+                "The multiplication",
+                "The addition"
+              ],
               working: [
                 { text: expression },
                 {
@@ -499,6 +674,23 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${add} ` },
+                { t: "+", order: 4 },
+                { t: " " },
+                { t: "√", order: 2 },
+                { t: `(${item.a} ` },
+                { t: "+", order: 1 },
+                { t: ` ${item.b}) ` },
+                { t: "×", order: 3 },
+                { t: ` ${multiplier}` }
+              ],
+              hint: [
+                "The addition inside the brackets",
+                `The root, √(${item.a} + ${item.b})`,
+                "The multiplication",
+                "The addition before the root"
+              ],
               working: [
                 { text: expression },
                 { text: `${add} + √${item.square} × ${multiplier}`, equals: true },
@@ -536,6 +728,29 @@
             return {
               text: `${expression} = ?`,
               answer,
+              tokens: [
+                { t: `${dividend} ` },
+                { t: "÷", order: 3 },
+                { t: ` (${x} ` },
+                { t: "+", order: 1 },
+                { t: ` ${y}) ` },
+                { t: "+", order: 5 },
+                { t: ` ${base}` },
+                { t: "²", order: 2 },
+                { t: " " },
+                { t: "×", order: 4 },
+                { t: ` ${multiplier} ` },
+                { t: "-", order: 6 },
+                { t: ` ${subtract}` }
+              ],
+              hint: [
+                "The addition inside the brackets",
+                `The power, ${base}²`,
+                "The division",
+                "The multiplication",
+                "The addition after the brackets",
+                "The subtraction"
+              ],
               working: [
                 { text: expression },
                 {
@@ -573,8 +788,61 @@
       const bodmasNew = document.getElementById("bodmas-new");
       const bodmasWorking = document.getElementById("bodmas-working");
       const bodmasSteps = document.getElementById("bodmas-steps");
+      const bodmasHint = document.getElementById("bodmas-hint");
+      const bodmasHintPanel = document.getElementById("bodmas-hint-panel");
+      const bodmasHintSteps = document.getElementById("bodmas-hint-steps");
 
       let currentBodmas = null;
+
+      // The question is built from tokens so that order badges can be
+      // positioned under each operator without changing the expression
+      // itself. Badges sit in their own layer and are hidden from
+      // assistive technology, which reads the plain expression instead.
+      function renderQuestion() {
+        bodmasQuestion.replaceChildren();
+
+        for (const token of currentBodmas.tokens) {
+          if (!token.order) {
+            bodmasQuestion.append(token.t);
+            continue;
+          }
+
+          const operator = document.createElement("span");
+          operator.className = "op";
+          operator.append(token.t);
+
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.setAttribute("aria-hidden", "true");
+          badge.textContent = String(token.order);
+
+          operator.appendChild(badge);
+          bodmasQuestion.appendChild(operator);
+        }
+
+        bodmasQuestion.append(" = ?");
+      }
+
+      function hideHint() {
+        bodmasQuestion.classList.remove("show-badges");
+        bodmasHintPanel.classList.add("hidden");
+        bodmasHintSteps.replaceChildren();
+        bodmasHint.textContent = "Hint to show calculation order";
+      }
+
+      function showHint() {
+        bodmasHintSteps.replaceChildren();
+
+        for (const step of currentBodmas.hint) {
+          const li = document.createElement("li");
+          li.textContent = step;
+          bodmasHintSteps.appendChild(li);
+        }
+
+        bodmasQuestion.classList.add("show-badges");
+        bodmasHintPanel.classList.remove("hidden");
+        bodmasHint.textContent = "Hide calculation order";
+      }
 
       function hideWorking() {
         bodmasWorking.classList.add("hidden");
@@ -605,9 +873,10 @@
         const generator = pick(bodmasGenerators());
         currentBodmas = generator();
 
-        bodmasQuestion.textContent = currentBodmas.text;
+        renderQuestion();
         bodmasAnswer.value = "";
         setFeedback(bodmasFeedback, "");
+        hideHint();
         hideWorking();
 
         if (moveFocus) {
@@ -638,6 +907,14 @@
             "fail"
           );
           bodmasAnswer.select();
+        }
+      });
+
+      bodmasHint.addEventListener("click", () => {
+        if (bodmasHintPanel.classList.contains("hidden")) {
+          showHint();
+        } else {
+          hideHint();
         }
       });
 

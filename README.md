@@ -27,6 +27,10 @@ The aim is not to make maths harder. It is to help people practise breaking a la
 
 If an answer is incorrect, the app encourages another attempt before revealing the solution. BODMAS questions can also show a worked solution that breaks the problem down step by step.
 
+BODMAS questions have a Hint button as well. This does not give the answer. It numbers each symbol in the question to show which operation to resolve first, second, third and so on. Knowing what order to work in and doing the arithmetic correctly are two separate skills, and it is easy to get the right answer using the wrong order without noticing. The hint targets the ordering on its own.
+
+The numbers appear below the symbols rather than inside the question, so the expression itself never changes while you are reading it.
+
 ## How it works
 
 The app is built as a single self-contained HTML file using:
@@ -38,6 +42,8 @@ The app is built as a single self-contained HTML file using:
 There are no frameworks, libraries, build tools or external dependencies.
 
 JavaScript generates the questions, checks the answers and creates worked BODMAS solutions.
+
+Each BODMAS pattern declares its own operator order rather than the app parsing the expression afterwards, so the hint numbering and the worked solution can never drift apart.
 
 The BODMAS generator uses a set of controlled question patterns so that generated problems stay within a useful learning range instead of producing arbitrary or overly complex maths.
 
@@ -51,6 +57,8 @@ The interface is intentionally simple and includes:
 - status messages announced using live regions
 - feedback that does not rely on colour alone
 - straightforward semantic HTML
+- hint numbering provided as an ordered list as well as visual badges, with the badges hidden from assistive technology so the question still reads as a plain expression
+- space for the hint badges reserved at all times, so revealing a hint does not shift the page
 
 ## Using the app
 
