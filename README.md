@@ -2,6 +2,8 @@
 
 A simple single-page app for practising basic maths in small, manageable steps.
 
+https://russmaxdesign.github.io/maths-problems/
+
 The app currently includes:
 
 - addition tests
