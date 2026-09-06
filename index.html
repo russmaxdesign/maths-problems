@@ -196,6 +196,39 @@
       margin-block: 0.75rem;
     }
 
+    .names-table {
+      width: 100%;
+      /* Five columns will not fit a phone, so the table keeps its width
+         and the wrapper scrolls sideways instead of the cells squashing
+         into one or two characters per line. */
+      min-width: 36rem;
+      border-collapse: collapse;
+    }
+
+    .names-table th,
+    .names-table td {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #999;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .names-table thead th {
+      background: #eee;
+    }
+
+    /* A scrolling container is not reachable by keyboard on its own, so it
+       is given a tabindex and an accessible name. Without this, a keyboard
+       user cannot reach the columns that are off screen. */
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    .table-scroll:focus {
+      outline: 3px solid currentColor;
+      outline-offset: 3px;
+    }
+
     .hidden {
       display: none;
     }
@@ -269,6 +302,12 @@
     <section aria-labelledby="bodmas-heading">
       <h2 id="bodmas-heading">BODMAS test</h2>
 
+      <p class="note">
+        This test works the same way if you were taught BIDMAS, BEDMAS or PEMDAS.
+        They are four names for one rule, and the differences are set out at the
+        <a href="#names">bottom of this page</a>.
+      </p>
+
       <p>Order of priority:</p>
 
       <ul class="instructions">
@@ -311,6 +350,75 @@
 
         <p id="bodmas-feedback" class="feedback" aria-live="polite"></p>
       </form>
+    </section>
+
+    <section id="names" aria-labelledby="names-heading">
+      <h2 id="names-heading">BODMAS, BIDMAS, BEDMAS and PEMDAS</h2>
+
+      <p class="note">
+        These are four names for the same rule. Orders, Indices and Exponents all
+        mean powers and roots. Parentheses is another word for brackets. Which one
+        you were taught mostly depends on where you went to school: BODMAS and
+        BIDMAS in the UK, Australia and India, BEDMAS in Canada and New Zealand,
+        PEMDAS in the United States.
+      </p>
+
+      <div
+        class="table-scroll"
+        tabindex="0"
+        role="region"
+        aria-label="The four acronyms compared"
+      >
+        <table class="names-table">
+          <thead>
+            <tr>
+              <th scope="col">Name</th>
+              <th scope="col">First</th>
+              <th scope="col">Second</th>
+              <th scope="col">Third</th>
+              <th scope="col">Fourth</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">BODMAS</th>
+              <td>Brackets</td>
+              <td>Orders</td>
+              <td>Division and Multiplication</td>
+              <td>Addition and Subtraction</td>
+            </tr>
+            <tr>
+              <th scope="row">BIDMAS</th>
+              <td>Brackets</td>
+              <td>Indices</td>
+              <td>Division and Multiplication</td>
+              <td>Addition and Subtraction</td>
+            </tr>
+            <tr>
+              <th scope="row">BEDMAS</th>
+              <td>Brackets</td>
+              <td>Exponents</td>
+              <td>Division and Multiplication</td>
+              <td>Addition and Subtraction</td>
+            </tr>
+            <tr>
+              <th scope="row">PEMDAS</th>
+              <td>Parentheses</td>
+              <td>Exponents</td>
+              <td>Multiplication and Division</td>
+              <td>Addition and Subtraction</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note">
+        The letter order in the third column is misleading in every version.
+        Division and Multiplication sit on the same level and are worked left to
+        right, whichever letter comes first in the name. Addition and Subtraction
+        work the same way. PEMDAS putting M before D does not mean multiplication
+        is done first.
+      </p>
     </section>
   </main>
 
