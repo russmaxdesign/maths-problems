@@ -6,26 +6,63 @@
   <link rel="shortcut icon" href="favicon.ico">
   <title>Maths problems</title>
   <style>
+    /* Colours are named by role rather than by value, so the dark scheme
+       below only has to restate the values. Every pair was checked for
+       contrast in both schemes. */
     :root {
+      --bg: #fff;
+      --text: #000;
+      --heading: #151b54;
+      --question: #2554c7;
+      --link: #0b3fa8;
+      --rule: #767676;
+      --input-border: #666;
+      --button-border: #444;
+      --button-hover: #eee;
+      --panel: #eee;
+      --badge-bg: #1a1a1a;
+      --badge-text: #fff;
+      --pass: #b7f0b7;
+      --fail: #ffc4c4;
+
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.5;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #14171f;
+        --text: #e9ecf3;
+        --heading: #b8c8ff;
+        --question: #8fb2ff;
+        --link: #9dc2ff;
+        --rule: #767f96;
+        --input-border: #98a2b8;
+        --button-border: #98a2b8;
+        --button-hover: #232838;
+        --panel: #1e2331;
+        --badge-bg: #e9ecf3;
+        --badge-text: #14171f;
+        --pass: #1f4a2a;
+        --fail: #5a2429;
+      }
     }
 
     body {
       max-width: 52rem;
       margin: 0 auto;
       padding: 1rem;
-      color: #000;
-      background: #fff;
+      color: var(--text);
+      background: var(--bg);
     }
 
     h1, h2 {
       line-height: 1.2;
-      color: #151B54;
+      color: var(--heading);
     }
 
     section {
-      border-top: 1px solid #999;
+      border-top: 1px solid var(--rule);
       padding-block: 1.5rem;
     }
 
@@ -37,7 +74,7 @@
          them, which is the pairing that is easiest to misread. It also
          gives the order badges room so they do not crowd each other. */
       word-spacing: 0.25em;
-      color: #2554C7;
+      color: var(--question);
     }
 
     /* Each operator reserves its own badge space via padding, so the line
@@ -50,6 +87,13 @@
       padding-bottom: 1.2rem;
     }
 
+    /* An inline-block is a line break opportunity, so "4" and its "²" can
+       otherwise land on separate lines. Tokens marked as tight are grouped
+       into one of these and travel together. */
+    .nobr {
+      white-space: nowrap;
+    }
+
     /* Kept deliberately narrow. Operators such as the ² and × in "4² × 3"
        sit close together, so a wide badge would collide with its neighbour. */
     .badge {
@@ -59,8 +103,8 @@
       transform: translateX(-50%);
       padding: 0.1rem 0.25rem;
       border-radius: 0.6rem;
-      background: #1a1a1a;
-      color: #fff;
+      background: var(--badge-bg);
+      color: var(--badge-text);
       font-size: 0.8rem;
       font-weight: 700;
       line-height: 1.2;
@@ -104,12 +148,14 @@
       margin-bottom: 0.35rem;
     }
 
-    input {
+    input[type="text"] {
       font: inherit;
       width: 10rem;
       max-width: 100%;
       padding: 0.5rem;
-      border: 2px solid #666;
+      color: var(--text);
+      background: var(--bg);
+      border: 2px solid var(--input-border);
       border-radius: 0.25rem;
     }
 
@@ -118,18 +164,20 @@
       margin-top: 0.75rem;
       margin-right: 0.5rem;
       padding: 0.5rem 0.8rem;
-      border: 2px solid #444;
+      color: var(--text);
+      background: var(--bg);
+      border: 2px solid var(--button-border);
       border-radius: 0.25rem;
-      background: #fff;
       cursor: pointer;
     }
 
     button:hover {
-      background: #eee;
+      background: var(--button-hover);
     }
 
     input:focus,
-    button:focus {
+    button:focus,
+    a:focus {
       outline: 3px solid currentColor;
       outline-offset: 3px;
     }
@@ -145,7 +193,7 @@
       border: 0;
       border-radius: 0;
       background: none;
-      color: #0b3fa8;
+      color: var(--link);
       text-align: left;
       text-decoration: underline;
       text-underline-offset: 0.2em;
@@ -154,6 +202,11 @@
     .link-button:hover {
       background: none;
       text-decoration-thickness: 0.15em;
+    }
+
+    a {
+      color: var(--link);
+      text-underline-offset: 0.2em;
     }
 
     .feedback {
@@ -166,17 +219,21 @@
     }
 
     .feedback.pass {
-      background: rgba(0, 255, 0, .3);
+      background: var(--pass);
     }
 
     .feedback.fail {
-      background: rgba(255, 0, 0, .3);
+      background: var(--fail);
+    }
+
+    .score {
+      margin-block: 0.5rem 0;
     }
 
     .working {
       margin-top: 1rem;
       padding: 1rem;
-      border: 1px solid #999;
+      border: 1px solid var(--rule);
     }
 
     .working h3 {
@@ -196,6 +253,29 @@
       margin-block: 0.75rem;
     }
 
+    /* The level choice changes what the questions contain, so it is a real
+       radio group rather than a pair of buttons. The block label rule above
+       is meant for the answer field, so it is undone here. */
+    .levels {
+      margin: 0 0 1rem;
+      padding: 0.5rem 1rem 0.75rem;
+      border: 1px solid var(--rule);
+    }
+
+    .levels legend {
+      padding-inline: 0.35rem;
+      font-weight: 700;
+    }
+
+    .levels label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-right: 1.25rem;
+      margin-bottom: 0;
+      font-weight: 400;
+    }
+
     .names-table {
       width: 100%;
       /* Five columns will not fit a phone, so the table keeps its width
@@ -208,13 +288,13 @@
     .names-table th,
     .names-table td {
       padding: 0.5rem 0.75rem;
-      border: 1px solid #999;
+      border: 1px solid var(--rule);
       text-align: left;
       vertical-align: top;
     }
 
     .names-table thead th {
-      background: #eee;
+      background: var(--panel);
     }
 
     /* A scrolling container is not reachable by keyboard on its own, so it
@@ -241,6 +321,14 @@
       margin-bottom: 1.5rem;
     }
 
+    .contents {
+      padding-left: 1.25rem;
+    }
+
+    .contents li {
+      margin-block: 0.2rem;
+    }
+
     /* The sign button sits beside the field rather than under it, so the
        two read as one control. Baseline alignment keeps them level even
        when the button text and the input text differ in size. */
@@ -265,19 +353,42 @@
     <h1>Maths problems</h1>
 
     <p class="note">
-      Work through one small step at a time. Questions are deliberately controlled:
-      divisions resolve to whole numbers, roots use perfect squares, and powers stay
-      small. Only the last test goes below zero.
+      Each test adds one new thing to the one before it. Work through them in
+      order if the later ones feel like too much at once, and drop back to an
+      earlier test at any point. Every test stays on this page, so nothing is
+      lost by moving between them.
     </p>
 
-    <section aria-labelledby="addition-heading">
-      <h2 id="addition-heading">Addition test</h2>
+    <nav aria-labelledby="contents-heading">
+      <h2 id="contents-heading">Tests on this page</h2>
+      <ol class="contents">
+        <li><a href="#addition">Addition</a></li>
+        <li><a href="#subtraction">Subtraction, including below zero</a></li>
+        <li><a href="#times">Times tables</a></li>
+        <li><a href="#division">Division, including halves and quarters</a></li>
+        <li><a href="#squares">Powers</a></li>
+        <li><a href="#roots">Roots</a></li>
+        <li><a href="#twoops">Two operations</a></li>
+        <li><a href="#bodmas">BODMAS</a></li>
+        <li><a href="#orders">BODMAS with powers and roots</a></li>
+        <li><a href="#negatives">BODMAS below zero</a></li>
+        <li><a href="#decimals">BODMAS with halves and quarters</a></li>
+        <li><a href="#names">BODMAS, BIDMAS, BEDMAS and PEMDAS</a></li>
+      </ol>
+    </nav>
+    <section id="addition" aria-labelledby="addition-heading">
+      <h2 id="addition-heading">Addition</h2>
+
+      <p class="note">
+        Two whole numbers. Nothing else is happening, so the only thing being tested is the addition itself.
+      </p>
 
       <form id="addition-form">
         <p id="addition-question" class="question"></p>
 
         <label for="addition-answer">Your answer</label>
         <input
+          type="text"
           id="addition-answer"
           name="addition-answer"
           inputmode="numeric"
@@ -291,17 +402,97 @@
         </div>
 
         <p id="addition-feedback" class="feedback" aria-live="polite"></p>
+        <p id="addition-score" class="score"></p>
+
+        <button type="button" id="addition-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="addition-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="addition-steps" class="working-steps"></div>
+        </div>
+
       </form>
     </section>
 
-    <section aria-labelledby="times-heading">
-      <h2 id="times-heading">Times-table test</h2>
+    <section id="subtraction" aria-labelledby="subtraction-heading">
+      <h2 id="subtraction-heading">Subtraction, including below zero</h2>
+
+      <p class="note">
+        Level one stays above zero. Level two crosses it, which is where a minus sign is easiest to lose. Meet that here, on its own, rather than inside a long chain later on.
+      </p>
+
+      <form id="subtraction-form">
+        <fieldset class="levels">
+          <legend>Level</legend>
+          <label>
+            <input type="radio" name="subtraction-level" value="0" checked>
+            Stays above zero
+          </label>
+          <label>
+            <input type="radio" name="subtraction-level" value="1">
+            Can go below zero
+          </label>
+        </fieldset>
+
+        <p id="subtraction-question" class="question"></p>
+
+        <label for="subtraction-answer">Your answer</label>
+        <div class="answer-row">
+          <input
+            type="text"
+            id="subtraction-answer"
+            name="subtraction-answer"
+            inputmode="numeric"
+            autocomplete="off"
+            aria-describedby="subtraction-question subtraction-sign-note subtraction-feedback"
+          >
+          <button
+            type="button"
+            id="subtraction-sign"
+            class="sign-button"
+            aria-label="Change the sign of your answer"
+          >±</button>
+        </div>
+
+        <p id="subtraction-sign-note" class="note">
+          Use the ± button, or type a minus sign before the number.
+        </p>
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="subtraction-new">New question</button>
+        </div>
+
+        <p id="subtraction-feedback" class="feedback" aria-live="polite"></p>
+        <p id="subtraction-score" class="score"></p>
+
+        <button type="button" id="subtraction-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="subtraction-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="subtraction-steps" class="working-steps"></div>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="times" aria-labelledby="times-heading">
+      <h2 id="times-heading">Times tables</h2>
+
+      <p class="note">
+        Both numbers are twelve or under.
+      </p>
 
       <form id="times-form">
         <p id="times-question" class="question"></p>
 
         <label for="times-answer">Your answer</label>
         <input
+          type="text"
           id="times-answer"
           name="times-answer"
           inputmode="numeric"
@@ -315,16 +506,205 @@
         </div>
 
         <p id="times-feedback" class="feedback" aria-live="polite"></p>
+        <p id="times-score" class="score"></p>
+
       </form>
     </section>
 
-    <section aria-labelledby="bodmas-heading">
-      <h2 id="bodmas-heading">BODMAS test</h2>
+    <section id="division" aria-labelledby="division-heading">
+      <h2 id="division-heading">Division, including halves and quarters</h2>
 
       <p class="note">
-        This test works the same way if you were taught BIDMAS, BEDMAS or PEMDAS.
-        They are four names for one rule, and the differences are set out at the
-        <a href="#names">bottom of this page</a>.
+        Level one always divides exactly. Level two divides by 2 or by 4 only, so the answer is never worse than a half or a quarter.
+      </p>
+
+      <p class="note">
+        Halving an odd number always gives you a .5. If you halve an odd number and get a whole number back, something has been lost.
+      </p>
+
+      <form id="division-form">
+        <fieldset class="levels">
+          <legend>Level</legend>
+          <label>
+            <input type="radio" name="division-level" value="0" checked>
+            Whole number answers
+          </label>
+          <label>
+            <input type="radio" name="division-level" value="1">
+            Halves and quarters
+          </label>
+        </fieldset>
+
+        <p id="division-question" class="question"></p>
+
+        <label for="division-answer">Your answer</label>
+        <input
+          type="text"
+          id="division-answer"
+          name="division-answer"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-describedby="division-question division-feedback"
+        >
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="division-new">New question</button>
+        </div>
+
+        <p id="division-feedback" class="feedback" aria-live="polite"></p>
+        <p id="division-score" class="score"></p>
+
+        <button type="button" id="division-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="division-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="division-steps" class="working-steps"></div>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="squares" aria-labelledby="squares-heading">
+      <h2 id="squares-heading">Powers</h2>
+
+      <p class="note">
+        Powers and plain multiplications are mixed together on purpose, and the question does not tell you which one you have. Read the symbol before you start: 4² is 4 × 4, not 4 × 2.
+      </p>
+
+      <form id="squares-form">
+        <p id="squares-question" class="question"></p>
+
+        <label for="squares-answer">Your answer</label>
+        <input
+          type="text"
+          id="squares-answer"
+          name="squares-answer"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-describedby="squares-question squares-feedback"
+        >
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="squares-new">New question</button>
+        </div>
+
+        <p id="squares-feedback" class="feedback" aria-live="polite"></p>
+        <p id="squares-score" class="score"></p>
+
+        <button type="button" id="squares-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="squares-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="squares-steps" class="working-steps"></div>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="roots" aria-labelledby="roots-heading">
+      <h2 id="roots-heading">Roots</h2>
+
+      <p class="note">
+        A root asks the question a power answers. Some of these are put to you as a root, and some as the question underneath it, so the two forms stay connected.
+      </p>
+
+      <form id="roots-form">
+        <p id="roots-question" class="question"></p>
+
+        <label for="roots-answer">Your answer</label>
+        <input
+          type="text"
+          id="roots-answer"
+          name="roots-answer"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-describedby="roots-question roots-feedback"
+        >
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="roots-new">New question</button>
+        </div>
+
+        <p id="roots-feedback" class="feedback" aria-live="polite"></p>
+        <p id="roots-score" class="score"></p>
+
+        <button type="button" id="roots-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="roots-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="roots-steps" class="working-steps"></div>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="twoops" aria-labelledby="twoops-heading">
+      <h2 id="twoops-heading">Two operations</h2>
+
+      <p class="note">
+        Two operations and no brackets. The whole job is deciding which of the two goes first.
+      </p>
+
+      <form id="twoops-form">
+        <p id="twoops-question" class="question"></p>
+
+        <button type="button" id="twoops-hint" class="link-button">
+          Show calculation order
+        </button>
+
+        <div id="twoops-hint-panel" class="hint hidden">
+          <h3>Order of operations</h3>
+          <ol id="twoops-hint-steps"></ol>
+        </div>
+
+        <label for="twoops-answer">Your answer</label>
+        <input
+          type="text"
+          id="twoops-answer"
+          name="twoops-answer"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-describedby="twoops-question twoops-feedback"
+        >
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="twoops-new">New question</button>
+        </div>
+
+        <p id="twoops-feedback" class="feedback" aria-live="polite"></p>
+        <p id="twoops-score" class="score"></p>
+
+        <button type="button" id="twoops-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="twoops-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="twoops-steps" class="working-steps"></div>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="bodmas" aria-labelledby="bodmas-heading">
+      <h2 id="bodmas-heading">BODMAS</h2>
+
+      <p class="note">
+        Brackets, division, multiplication, addition and subtraction. Powers and roots are held back for the next test, so a wrong answer here is about order rather than notation.
+      </p>
+
+      <p class="note">
+        This test works the same way if you were taught BIDMAS, BEDMAS or PEMDAS. They are four names for one rule, and the differences are set out at the <a href="#names">bottom of this page</a>.
       </p>
 
       <p>Order of priority:</p>
@@ -340,16 +720,17 @@
         <p id="bodmas-question" class="question"></p>
 
         <button type="button" id="bodmas-hint" class="link-button">
-          Hint to show calculation order
+          Show calculation order
         </button>
 
-        <div id="bodmas-hint-panel" class="hint hidden" aria-live="polite">
+        <div id="bodmas-hint-panel" class="hint hidden">
           <h3>Order of operations</h3>
           <ol id="bodmas-hint-steps"></ol>
         </div>
 
         <label for="bodmas-answer">Your answer</label>
         <input
+          type="text"
           id="bodmas-answer"
           name="bodmas-answer"
           inputmode="numeric"
@@ -362,38 +743,89 @@
           <button type="button" id="bodmas-new">New question</button>
         </div>
 
+        <p id="bodmas-feedback" class="feedback" aria-live="polite"></p>
+        <p id="bodmas-score" class="score"></p>
+
+        <button type="button" id="bodmas-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
         <div id="bodmas-working" class="working hidden">
           <h3>Working</h3>
           <div id="bodmas-steps" class="working-steps"></div>
         </div>
 
-        <p id="bodmas-feedback" class="feedback" aria-live="polite"></p>
       </form>
     </section>
 
-    <section aria-labelledby="negatives-heading">
-      <h2 id="negatives-heading">BODMAS test with negative numbers</h2>
+    <section id="orders" aria-labelledby="orders-heading">
+      <h2 id="orders-heading">BODMAS with powers and roots</h2>
 
       <p class="note">
-        Same rule, same order of priority. The difference is that a subtraction can
-        now take you below zero, and the working carries on from there. Every number
-        is still whole.
+        The same rule with Orders added back in. Powers and roots are resolved second, straight after brackets, wherever they sit in the line.
+      </p>
+
+      <form id="orders-form">
+        <p id="orders-question" class="question"></p>
+
+        <button type="button" id="orders-hint" class="link-button">
+          Show calculation order
+        </button>
+
+        <div id="orders-hint-panel" class="hint hidden">
+          <h3>Order of operations</h3>
+          <ol id="orders-hint-steps"></ol>
+        </div>
+
+        <label for="orders-answer">Your answer</label>
+        <input
+          type="text"
+          id="orders-answer"
+          name="orders-answer"
+          inputmode="numeric"
+          autocomplete="off"
+          aria-describedby="orders-question orders-feedback"
+        >
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="orders-new">New question</button>
+        </div>
+
+        <p id="orders-feedback" class="feedback" aria-live="polite"></p>
+        <p id="orders-score" class="score"></p>
+
+        <button type="button" id="orders-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="orders-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="orders-steps" class="working-steps"></div>
+        </div>
+
+      </form>
+    </section>
+
+    <section id="negatives" aria-labelledby="negatives-heading">
+      <h2 id="negatives-heading">BODMAS below zero</h2>
+
+      <p class="note">
+        Same rule, same order of priority. The difference is that a subtraction can now take you below zero and the working carries on from there. Every number is still whole.
       </p>
 
       <p class="note">
-        Two things to watch. A subtraction still happens in its left to right place,
-        not last. And once a number is negative, adding to it moves it back towards
-        zero rather than away from it.
+        Two things to watch. A subtraction still happens in its left to right place, not last. And once a number is negative, adding to it moves it back towards zero rather than away from it.
       </p>
 
       <form id="negatives-form">
         <p id="negatives-question" class="question"></p>
 
         <button type="button" id="negatives-hint" class="link-button">
-          Hint to show calculation order
+          Show calculation order
         </button>
 
-        <div id="negatives-hint-panel" class="hint hidden" aria-live="polite">
+        <div id="negatives-hint-panel" class="hint hidden">
           <h3>Order of operations</h3>
           <ol id="negatives-hint-steps"></ol>
         </div>
@@ -401,11 +833,12 @@
         <label for="negatives-answer">Your answer</label>
         <div class="answer-row">
           <input
+            type="text"
             id="negatives-answer"
             name="negatives-answer"
             inputmode="numeric"
             autocomplete="off"
-            aria-describedby="negatives-question negatives-hint-note negatives-feedback"
+            aria-describedby="negatives-question negatives-sign-note negatives-feedback"
           >
           <button
             type="button"
@@ -415,7 +848,7 @@
           >±</button>
         </div>
 
-        <p id="negatives-hint-note" class="note">
+        <p id="negatives-sign-note" class="note">
           Use the ± button, or type a minus sign before the number.
         </p>
 
@@ -424,12 +857,79 @@
           <button type="button" id="negatives-new">New question</button>
         </div>
 
+        <p id="negatives-feedback" class="feedback" aria-live="polite"></p>
+        <p id="negatives-score" class="score"></p>
+
+        <button type="button" id="negatives-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
         <div id="negatives-working" class="working hidden">
           <h3>Working</h3>
           <div id="negatives-steps" class="working-steps"></div>
         </div>
 
-        <p id="negatives-feedback" class="feedback" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="decimals" aria-labelledby="decimals-heading">
+      <h2 id="decimals-heading">BODMAS with halves and quarters</h2>
+
+      <p class="note">
+        Divisions here are by 2 or by 4 only, so the decimals are never worse than .25, .5 or .75. Several of these also cross zero, so you are carrying a decimal and a minus at the same time.
+      </p>
+
+      <form id="decimals-form">
+        <p id="decimals-question" class="question"></p>
+
+        <button type="button" id="decimals-hint" class="link-button">
+          Show calculation order
+        </button>
+
+        <div id="decimals-hint-panel" class="hint hidden">
+          <h3>Order of operations</h3>
+          <ol id="decimals-hint-steps"></ol>
+        </div>
+
+        <label for="decimals-answer">Your answer</label>
+        <div class="answer-row">
+          <input
+            type="text"
+            id="decimals-answer"
+            name="decimals-answer"
+            inputmode="decimal"
+            autocomplete="off"
+            aria-describedby="decimals-question decimals-sign-note decimals-feedback"
+          >
+          <button
+            type="button"
+            id="decimals-sign"
+            class="sign-button"
+            aria-label="Change the sign of your answer"
+          >±</button>
+        </div>
+
+        <p id="decimals-sign-note" class="note">
+          Use the ± button, or type a minus sign before the number.
+        </p>
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="decimals-new">New question</button>
+        </div>
+
+        <p id="decimals-feedback" class="feedback" aria-live="polite"></p>
+        <p id="decimals-score" class="score"></p>
+
+        <button type="button" id="decimals-working-toggle" class="link-button hidden">
+          Show working
+        </button>
+
+        <div id="decimals-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="decimals-steps" class="working-steps"></div>
+        </div>
+
       </form>
     </section>
 
@@ -502,128 +1002,111 @@
       </p>
     </section>
   </main>
-
   <script>
     (() => {
+      "use strict";
+
       const randomInt = (min, max) =>
         Math.floor(Math.random() * (max - min + 1)) + min;
 
       const pick = (items) => items[randomInt(0, items.length - 1)];
 
+      // Builds the token list for a question. A plain string is text. An
+      // array is [symbol, order, tight]: order puts a numbered badge under
+      // the symbol, and tight keeps the token on the same line as the one
+      // before it. The displayed expression is assembled from these tokens
+      // rather than written out separately, so the two cannot drift apart.
+      const T = (...parts) =>
+        parts.map((part) =>
+          Array.isArray(part)
+            ? { t: part[0], order: part[1] || null, tight: Boolean(part[2]) }
+            : { t: part, order: null, tight: false }
+        );
+
       // People write negatives in more than one way. A Unicode minus or an
       // en dash arrives from phone keyboards and from pasted text, and the
       // bracketed form is a common way to keep the sign attached to the
-      // number. All three mean the same thing, so all three are accepted.
+      // number. All of them mean the same thing, so all are accepted.
+      // Spaces are stripped before the bracket is tested, so "( -5 )" works
+      // as well as "(-5)".
       const normaliseNumber = (value) => {
-        let trimmed = value.trim().replace(/[\u2212\u2013\u2014]/g, "-");
+        let text = value
+          .trim()
+          .replace(/[\u2212\u2013\u2014]/g, "-")
+          .replace(/\s+/g, "");
 
-        const bracketed = trimmed.match(/^\((-?[\d.]+)\)$/);
+        const bracketed = text.match(/^\((-?\d*\.?\d+)\)$/);
         if (bracketed) {
-          trimmed = bracketed[1];
+          text = bracketed[1];
         }
 
-        trimmed = trimmed.replace(/\s+/g, "");
-        if (trimmed === "") return null;
+        if (text === "") return null;
 
-        const number = Number(trimmed);
+        const number = Number(text);
         return Number.isFinite(number) ? number : null;
       };
+
+      // Every division in this app is by 2 or by 4, so answers are exact in
+      // binary and a direct comparison would work. The tolerance is here so
+      // that adding a third or a tenth later cannot silently start marking
+      // correct answers wrong.
+      const sameNumber = (a, b) => Math.abs(a - b) < 1e-9;
 
       const setFeedback = (element, message, state = null) => {
         element.textContent = message;
         element.classList.remove("pass", "fail");
-
-        if (state) {
-          element.classList.add(state);
-        }
+        if (state) element.classList.add(state);
       };
 
-      function setupSimpleTest({
-        formId,
-        questionId,
-        answerId,
-        feedbackId,
-        newButtonId,
-        generator
-      }) {
-        const form = document.getElementById(formId);
-        const question = document.getElementById(questionId);
-        const answer = document.getElementById(answerId);
-        const feedback = document.getElementById(feedbackId);
-        const newButton = document.getElementById(newButtonId);
+      /* ---------- shared working-out lines ---------- */
 
-        let current = null;
+      const powerNote = (base, exponent) =>
+        exponent === 2
+          ? `${base}² = ${base} × ${base} = ${base * base}`
+          : `${base}³ = ${base} × ${base} × ${base} = ${base * base * base}`;
 
-        function newQuestion(moveFocus = false) {
-          current = generator();
-          question.textContent = current.text;
-          answer.value = "";
-          setFeedback(feedback, "");
+      const rootNote = (root, square) =>
+        `√${square} = ${root}, because ${root} × ${root} = ${square}`;
 
-          if (moveFocus) {
-            answer.focus();
-          }
+      // Names the size of the gap rather than restating the rule. The
+      // recorded slip is computing 5 - 12 as -6, an off-by-one from
+      // counting the gap wrongly, so the gap is what the sentence gives.
+      // Guarded, so it stays true if a caller ever produces a subtraction
+      // that does not cross zero.
+      const crossesZero = (from, take) => {
+        const result = from - take;
+        if (take <= from) return `${from} - ${take} = ${result}`;
+        return (
+          `${from} - ${take} = ${result}, because ${take} is ` +
+          `${take - from} more than ${from}`
+        );
+      };
+
+      const fractionNames = {
+        0.25: "a quarter",
+        0.5: "half",
+        0.75: "three quarters"
+      };
+
+      // The decomposition used in the handwritten notes: count the whole
+      // lots, then say what the leftover is a fraction of.
+      const divideNote = (dividend, divisor) => {
+        const whole = Math.floor(dividend / divisor);
+        const remainder = dividend - whole * divisor;
+        const result = dividend / divisor;
+
+        if (remainder === 0) {
+          return `${whole} × ${divisor} = ${dividend}, so ${dividend} ÷ ${divisor} = ${whole}`;
         }
 
-        form.addEventListener("submit", (event) => {
-          event.preventDefault();
+        return (
+          `${whole} × ${divisor} = ${whole * divisor}, with ${remainder} left over. ` +
+          `${remainder} is ${fractionNames[remainder / divisor]} of ${divisor}, ` +
+          `so ${dividend} ÷ ${divisor} = ${result}`
+        );
+      };
 
-          const userAnswer = normaliseNumber(answer.value);
-
-          if (userAnswer === null) {
-            setFeedback(feedback, "Enter a number first.");
-            answer.focus();
-            return;
-          }
-
-          if (userAnswer === current.answer) {
-            setFeedback(feedback, "Correct.", "pass");
-          } else {
-            setFeedback(feedback, "Incorrect. Try again.", "fail");
-            answer.select();
-          }
-        });
-
-        newButton.addEventListener("click", () => {
-          newQuestion(true);
-        });
-
-        newQuestion(false);
-      }
-
-      setupSimpleTest({
-        formId: "addition-form",
-        questionId: "addition-question",
-        answerId: "addition-answer",
-        feedbackId: "addition-feedback",
-        newButtonId: "addition-new",
-        generator() {
-          const a = randomInt(1, 99);
-          const b = randomInt(1, 99);
-          return {
-            text: `${a} + ${b} = ?`,
-            answer: a + b
-          };
-        }
-      });
-
-      setupSimpleTest({
-        formId: "times-form",
-        questionId: "times-question",
-        answerId: "times-answer",
-        feedbackId: "times-feedback",
-        newButtonId: "times-new",
-        generator() {
-          const a = randomInt(1, 12);
-          const b = randomInt(1, 12);
-          return {
-            text: `${a} × ${b} = ?`,
-            answer: a * b
-          };
-        }
-      });
-
-      const perfectSquares = [
+      const squareTable = [
         { root: 2, square: 4 },
         { root: 3, square: 9 },
         { root: 4, square: 16 },
@@ -637,699 +1120,1620 @@
         { root: 12, square: 144 }
       ];
 
-      function bodmasGenerators() {
-        return [
-          // Addition + multiplication
-          () => {
-            const a = randomInt(2, 20);
-            const b = randomInt(2, 9);
-            const c = randomInt(2, 9);
-            const product = b * c;
-            const answer = a + product;
-            const expression = `${a} + ${b} × ${c}`;
+      // Kept small so the products inside longer expressions stay readable.
+      const smallSquares = squareTable.slice(0, 8);
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${a} ` },
-                { t: "+", order: 2 },
-                { t: ` ${b} ` },
-                { t: "×", order: 1 },
-                { t: ` ${c}` }
-              ],
-              hint: ["The multiplication", "The addition"],
-              working: [
-                { text: expression },
-                { text: `${a} + ${product}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      /* ---------- 1. Addition ---------- */
 
-          // Division + multiplication
-          () => {
-            const divisor = randomInt(2, 9);
-            const quotient = randomInt(2, 12);
-            const dividend = divisor * quotient;
-            const multiplier = randomInt(2, 6);
-            const product = quotient * multiplier;
-            const expression = `${dividend} ÷ ${divisor} × ${multiplier}`;
+      const additionPool = [
+        () => {
+          const a = randomInt(1, 99);
+          const b = randomInt(1, 99);
+          return { tokens: T(`${a} + ${b}`), answer: a + b };
+        },
+        () => {
+          const a = randomInt(1, 40);
+          const b = randomInt(1, 40);
+          const c = randomInt(1, 40);
+          return {
+            tokens: T(`${a} + ${b} + ${c}`),
+            answer: a + b + c,
+            working: [
+              { text: `${a} + ${b} + ${c}` },
+              { text: `${a + b} + ${c}`, equals: true },
+              { text: `${a + b + c}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            return {
-              text: `${expression} = ?`,
-              answer: product,
-              tokens: [
-                { t: `${dividend} ` },
-                { t: "÷", order: 1 },
-                { t: ` ${divisor} ` },
-                { t: "×", order: 2 },
-                { t: ` ${multiplier}` }
-              ],
-              hint: ["The division", "The multiplication"],
-              working: [
-                { text: expression },
-                { text: `${quotient} × ${multiplier}`, equals: true },
-                { text: `${product}`, equals: true }
-              ]
-            };
-          },
+      /* ---------- 2. Subtraction ---------- */
 
-          // Brackets + division + addition
-          () => {
-            const x = randomInt(2, 6);
-            const y = randomInt(2, 6);
-            const bracket = x + y;
-            const quotient = randomInt(2, 10);
-            const dividend = bracket * quotient;
-            const add = randomInt(2, 12);
-            const answer = quotient + add;
-            const expression = `${dividend} ÷ (${x} + ${y}) + ${add}`;
+      const subtractionAboveZero = [
+        () => {
+          const a = randomInt(20, 99);
+          const b = randomInt(1, a - 1);
+          return { tokens: T(`${a} - ${b}`), answer: a - b };
+        },
+        () => {
+          const a = randomInt(40, 99);
+          const b = randomInt(1, 30);
+          const c = randomInt(1, a - b - 1);
+          return {
+            tokens: T(`${a} - ${b} - ${c}`),
+            answer: a - b - c,
+            working: [
+              { text: `${a} - ${b} - ${c}` },
+              { text: `${a - b} - ${c}`, equals: true },
+              { text: `${a - b - c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(20, 60);
+          const b = randomInt(1, a - 1);
+          const c = randomInt(1, 30);
+          return {
+            tokens: T(`${a} - ${b} + ${c}`),
+            answer: a - b + c,
+            working: [
+              { text: `${a} - ${b} + ${c}` },
+              { text: `${a - b} + ${c}`, equals: true },
+              { text: `${a - b + c}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${dividend} ` },
-                { t: "÷", order: 2 },
-                { t: ` (${x} ` },
-                { t: "+", order: 1 },
-                { t: ` ${y}) ` },
-                { t: "+", order: 3 },
-                { t: ` ${add}` }
-              ],
-              hint: [
-                "The addition inside the brackets",
-                "The division",
-                "The addition after the brackets"
-              ],
-              working: [
-                { text: expression },
-                { text: `${dividend} ÷ ${bracket} + ${add}`, equals: true },
-                { text: `${quotient} + ${add}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      const subtractionBelowZero = [
+        () => {
+          const a = randomInt(2, 40);
+          const b = a + randomInt(2, 40);
+          return {
+            tokens: T(`${a} - ${b}`),
+            answer: a - b,
+            working: [
+              { text: `${a} - ${b}` },
+              { text: crossesZero(a, b), note: true },
+              { text: `${a - b}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(3, 30);
+          const b = a + randomInt(2, 25);
+          const c = randomInt(1, 20);
+          return {
+            tokens: T(`${a} - ${b} + ${c}`),
+            answer: a - b + c,
+            working: [
+              { text: `${a} - ${b} + ${c}` },
+              { text: crossesZero(a, b), note: true },
+              { text: `${a - b} + ${c}`, equals: true },
+              { text: `${a - b + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(10, 40);
+          const b = randomInt(1, a - 1);
+          const c = a - b + randomInt(2, 25);
+          return {
+            tokens: T(`${a} - ${b} - ${c}`),
+            answer: a - b - c,
+            working: [
+              { text: `${a} - ${b} - ${c}` },
+              { text: `${a - b} - ${c}`, equals: true },
+              { text: crossesZero(a - b, c), note: true },
+              { text: `${a - b - c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 25);
+          const b = randomInt(2, 25);
+          const c = a + b + randomInt(2, 30);
+          return {
+            tokens: T(`${a} + ${b} - ${c}`),
+            answer: a + b - c,
+            working: [
+              { text: `${a} + ${b} - ${c}` },
+              { text: `${a + b} - ${c}`, equals: true },
+              { text: crossesZero(a + b, c), note: true },
+              { text: `${a + b - c}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-          // Square + multiplication + addition
-          () => {
-            const base = randomInt(2, 5);
-            const square = base * base;
-            const multiplier = randomInt(2, 5);
-            const add = randomInt(2, 15);
-            const product = square * multiplier;
-            const answer = add + product;
-            const expression = `${add} + ${base}² × ${multiplier}`;
+      /* ---------- 3. Times tables ---------- */
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${add} ` },
-                { t: "+", order: 3 },
-                { t: ` ${base}` },
-                { t: "²", order: 1 },
-                { t: " " },
-                { t: "×", order: 2 },
-                { t: ` ${multiplier}` }
-              ],
-              hint: [
-                `The power, ${base}²`,
-                "The multiplication",
-                "The addition"
-              ],
-              working: [
-                { text: expression },
-                { text: `${base}² = ${base} × ${base} = ${square}`, note: true },
-                { text: `${add} + ${square} × ${multiplier}`, equals: true },
-                { text: `${add} + ${product}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      const timesPool = [
+        () => {
+          const a = randomInt(1, 12);
+          const b = randomInt(1, 12);
+          return { tokens: T(`${a} × ${b}`), answer: a * b };
+        }
+      ];
 
-          // Cube + division + subtraction + addition
-          () => {
-            const base = randomInt(2, 3);
-            const cube = base * base * base;
-            const divisor = randomInt(2, 6);
-            const quotient = randomInt(4, 12);
-            const dividend = divisor * quotient;
-            const subtraction = randomInt(1, Math.max(1, quotient - 1));
-            const afterSubtraction = quotient - subtraction;
-            const answer = afterSubtraction + cube;
-            const expression = `${dividend} ÷ ${divisor} - ${subtraction} + ${base}³`;
+      /* ---------- 4. Division ---------- */
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${dividend} ` },
-                { t: "÷", order: 2 },
-                { t: ` ${divisor} ` },
-                { t: "-", order: 3 },
-                { t: ` ${subtraction} ` },
-                { t: "+", order: 4 },
-                { t: ` ${base}` },
-                { t: "³", order: 1 }
-              ],
-              hint: [
-                `The power, ${base}³`,
-                "The division",
-                "The subtraction",
-                "The addition"
-              ],
-              working: [
-                { text: expression },
-                {
-                  text: `${base}³ = ${base} × ${base} × ${base} = ${cube}`,
-                  note: true
-                },
-                {
-                  text: `${dividend} ÷ ${divisor} - ${subtraction} + ${cube}`,
-                  equals: true
-                },
-                { text: `${quotient} - ${subtraction} + ${cube}`, equals: true },
-                { text: `${afterSubtraction} + ${cube}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      const divisionWhole = [
+        () => {
+          const divisor = randomInt(2, 12);
+          const quotient = randomInt(2, 12);
+          const dividend = divisor * quotient;
+          return {
+            tokens: T(`${dividend} ÷ ${divisor}`),
+            answer: quotient,
+            working: [
+              { text: `${dividend} ÷ ${divisor}` },
+              { text: divideNote(dividend, divisor), note: true },
+              { text: `${quotient}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const last = randomInt(2, 9);
+          const second = randomInt(2, 5);
+          const first = randomInt(2, 6);
+          const middle = last * second;
+          const dividend = middle * first;
+          return {
+            tokens: T(`${dividend} ÷ ${first} ÷ ${second}`),
+            answer: last,
+            working: [
+              { text: `${dividend} ÷ ${first} ÷ ${second}` },
+              { text: `${middle} ÷ ${second}`, equals: true },
+              { text: `${last}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-          // Simple square root + multiplication + addition
-          () => {
-            const item = pick(perfectSquares.slice(1, 8));
-            const multiplier = randomInt(2, 5);
-            const add = randomInt(2, 12);
-            const product = item.root * multiplier;
-            const answer = add + product;
-            const expression = `${add} + √${item.square} × ${multiplier}`;
+      const divisionFractions = [
+        () => {
+          const dividend = randomInt(2, 24) * 2 + 1;
+          return {
+            tokens: T(`${dividend} ÷ 2`),
+            answer: dividend / 2,
+            working: [
+              { text: `${dividend} ÷ 2` },
+              { text: divideNote(dividend, 2), note: true },
+              { text: `${dividend / 2}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          let dividend = randomInt(5, 60);
+          if (dividend % 4 === 0) dividend += 1;
+          return {
+            tokens: T(`${dividend} ÷ 4`),
+            answer: dividend / 4,
+            working: [
+              { text: `${dividend} ÷ 4` },
+              { text: divideNote(dividend, 4), note: true },
+              { text: `${dividend / 4}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          // Even, but half of it is odd, so the first division is clean and
+          // the second one is the step that produces the decimal.
+          const half = randomInt(2, 15) * 2 + 1;
+          const dividend = half * 2;
+          return {
+            tokens: T(`${dividend} ÷ 2 ÷ 2`),
+            answer: dividend / 4,
+            working: [
+              { text: `${dividend} ÷ 2 ÷ 2` },
+              { text: `${half} ÷ 2`, equals: true },
+              { text: divideNote(half, 2), note: true },
+              { text: `${dividend / 4}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${add} ` },
-                { t: "+", order: 3 },
-                { t: " " },
-                { t: "√", order: 1 },
-                { t: `${item.square} ` },
-                { t: "×", order: 2 },
-                { t: ` ${multiplier}` }
-              ],
-              hint: [
-                `The root, √${item.square}`,
-                "The multiplication",
-                "The addition"
-              ],
-              working: [
-                { text: expression },
-                {
-                  text: `√${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
-                  note: true
-                },
-                { text: `${add} + ${item.root} × ${multiplier}`, equals: true },
-                { text: `${add} + ${product}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      /* ---------- 5. Powers ---------- */
 
-          // Root containing brackets, like √(9 + 7)
-          () => {
-            const item = pick([
-              { a: 9, b: 7, square: 16, root: 4 },
-              { a: 16, b: 9, square: 25, root: 5 },
-              { a: 20, b: 16, square: 36, root: 6 },
-              { a: 40, b: 9, square: 49, root: 7 },
-              { a: 55, b: 9, square: 64, root: 8 }
-            ]);
-            const multiplier = randomInt(2, 4);
-            const add = randomInt(2, 10);
-            const product = item.root * multiplier;
-            const answer = add + product;
-            const expression = `${add} + √(${item.a} + ${item.b}) × ${multiplier}`;
+      // Powers and their look-alike multiplications share one pool. The
+      // question does not say which it is, so the notation has to be read
+      // rather than guessed from the section heading.
+      const squaresPool = [
+        () => {
+          const n = randomInt(2, 12);
+          return {
+            tokens: T(`${n}`, ["²", null, true]),
+            answer: n * n,
+            working: [
+              { text: `${n}²` },
+              {
+                text: `The small 2 counts how many times ${n} is used. It is not something ${n} is multiplied by: ${n} × 2 would be ${n * 2}.`,
+                note: true
+              },
+              { text: `${n} × ${n}`, equals: true },
+              { text: `${n * n}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const n = randomInt(2, 12);
+          return {
+            tokens: T(`${n} × 2`),
+            answer: n * 2,
+            working: [
+              { text: `${n} × 2` },
+              {
+                text: `This is a plain multiplication. ${n}² would be ${n} × ${n} = ${n * n}.`,
+                note: true
+              },
+              { text: `${n * 2}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const n = randomInt(2, 6);
+          return {
+            tokens: T(`${n}`, ["³", null, true]),
+            answer: n * n * n,
+            working: [
+              { text: `${n}³` },
+              {
+                text: `The small 3 counts how many times ${n} is used: ${n} × 3 would be ${n * 3}.`,
+                note: true
+              },
+              { text: `${n} × ${n} × ${n}`, equals: true },
+              { text: `${n * n * n}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const n = randomInt(2, 6);
+          return {
+            tokens: T(`${n} × 3`),
+            answer: n * 3,
+            working: [
+              { text: `${n} × 3` },
+              {
+                text: `This is a plain multiplication. ${n}³ would be ${n} × ${n} × ${n} = ${n * n * n}.`,
+                note: true
+              },
+              { text: `${n * 3}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${add} ` },
-                { t: "+", order: 4 },
-                { t: " " },
-                { t: "√", order: 2 },
-                { t: `(${item.a} ` },
-                { t: "+", order: 1 },
-                { t: ` ${item.b}) ` },
-                { t: "×", order: 3 },
-                { t: ` ${multiplier}` }
-              ],
-              hint: [
-                "The addition inside the brackets",
-                `The root, √(${item.a} + ${item.b})`,
-                "The multiplication",
-                "The addition before the root"
-              ],
-              working: [
-                { text: expression },
-                { text: `${add} + √${item.square} × ${multiplier}`, equals: true },
-                {
-                  text: `√${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
-                  note: true
-                },
-                { text: `${add} + ${item.root} × ${multiplier}`, equals: true },
-                { text: `${add} + ${product}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      /* ---------- 6. Roots ---------- */
 
-          // Mixed: brackets + square + division + multiplication + subtraction
-          () => {
-            const x = randomInt(2, 5);
-            const y = randomInt(2, 5);
-            const bracket = x + y;
+      const rootsPool = [
+        () => {
+          const item = pick(squareTable);
+          return {
+            tokens: T(["√", null, false], [`${item.square}`, null, true]),
+            answer: item.root,
+            working: [
+              { text: `√${item.square}` },
+              {
+                text: `√${item.square} asks: what number times itself gives ${item.square}?`,
+                note: true
+              },
+              {
+                text: `${item.root} × ${item.root} = ${item.square}`,
+                note: true
+              },
+              { text: `${item.root}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          // The same question written the other way round, so the root
+          // symbol and the multiplication under it stay connected.
+          const item = pick(squareTable);
+          return {
+            tokens: T(`? × ? = ${item.square}`),
+            suffix: "",
+            answer: item.root,
+            working: [
+              {
+                text: `What number times itself gives ${item.square}?`,
+                note: true
+              },
+              {
+                text: `${item.root} × ${item.root} = ${item.square}`,
+                note: true
+              },
+              { text: `${item.root}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const item = pick(squareTable.slice(1, 8));
+          const a = randomInt(2, item.square - 2);
+          const b = item.square - a;
+          return {
+            tokens: T(["√", null, false], [`(${a} + ${b})`, null, true]),
+            answer: item.root,
+            working: [
+              { text: `√(${a} + ${b})` },
+              {
+                text: `Everything inside the brackets is under the root, so add first.`,
+                note: true
+              },
+              { text: `√${item.square}`, equals: true },
+              { text: rootNote(item.root, item.square), note: true },
+              { text: `${item.root}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            const quotient = randomInt(4, 12);
-            const dividend = bracket * quotient;
+      /* ---------- 7. Two operations ---------- */
 
-            const base = randomInt(2, 4);
-            const square = base * base;
-            const multiplier = randomInt(2, 3);
-            const product = square * multiplier;
+      const twoOpsPool = [
+        () => {
+          const a = randomInt(2, 20);
+          const b = randomInt(2, 9);
+          const c = randomInt(2, 9);
+          const product = b * c;
+          return {
+            tokens: T(`${a} `, ["+", 2], ` ${b} `, ["×", 1], ` ${c}`),
+            answer: a + product,
+            hint: ["The multiplication", "The addition"],
+            working: [
+              { text: `${a} + ${b} × ${c}` },
+              { text: `${a} + ${product}`, equals: true },
+              { text: `${a + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const b = randomInt(2, 8);
+          const c = randomInt(2, 8);
+          const product = b * c;
+          const a = product + randomInt(1, 30);
+          return {
+            tokens: T(`${a} `, ["-", 2], ` ${b} `, ["×", 1], ` ${c}`),
+            answer: a - product,
+            hint: ["The multiplication", "The subtraction"],
+            working: [
+              { text: `${a} - ${b} × ${c}` },
+              { text: `${a} - ${product}`, equals: true },
+              { text: `${a - product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 9);
+          const b = randomInt(2, 9);
+          const c = randomInt(2, 20);
+          const product = a * b;
+          return {
+            tokens: T(`${a} `, ["×", 1], ` ${b} `, ["+", 2], ` ${c}`),
+            answer: product + c,
+            hint: ["The multiplication", "The addition"],
+            working: [
+              { text: `${a} × ${b} + ${c}` },
+              { text: `${product} + ${c}`, equals: true },
+              { text: `${product + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const divisor = randomInt(2, 9);
+          const quotient = randomInt(2, 12);
+          const dividend = divisor * quotient;
+          const c = randomInt(2, 20);
+          return {
+            tokens: T(`${dividend} `, ["÷", 1], ` ${divisor} `, ["+", 2], ` ${c}`),
+            answer: quotient + c,
+            hint: ["The division", "The addition"],
+            working: [
+              { text: `${dividend} ÷ ${divisor} + ${c}` },
+              { text: `${quotient} + ${c}`, equals: true },
+              { text: `${quotient + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 20);
+          const divisor = randomInt(2, 9);
+          const quotient = randomInt(2, 12);
+          const dividend = divisor * quotient;
+          return {
+            tokens: T(`${a} `, ["+", 2], ` ${dividend} `, ["÷", 1], ` ${divisor}`),
+            answer: a + quotient,
+            hint: ["The division", "The addition"],
+            working: [
+              { text: `${a} + ${dividend} ÷ ${divisor}` },
+              { text: `${a} + ${quotient}`, equals: true },
+              { text: `${a + quotient}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const divisor = randomInt(2, 9);
+          const quotient = randomInt(2, 12);
+          const dividend = divisor * quotient;
+          const multiplier = randomInt(2, 6);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 1],
+              ` ${divisor} `,
+              ["×", 2],
+              ` ${multiplier}`
+            ),
+            answer: quotient * multiplier,
+            hint: [
+              "The division, because it is the left of the two",
+              "The multiplication"
+            ],
+            working: [
+              { text: `${dividend} ÷ ${divisor} × ${multiplier}` },
+              { text: `${quotient} × ${multiplier}`, equals: true },
+              { text: `${quotient * multiplier}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(20, 60);
+          const b = randomInt(2, a - 2);
+          const c = randomInt(2, 25);
+          return {
+            tokens: T(`${a} `, ["-", 1], ` ${b} `, ["+", 2], ` ${c}`),
+            answer: a - b + c,
+            hint: [
+              "The subtraction, because it is the left of the two",
+              "The addition"
+            ],
+            working: [
+              { text: `${a} - ${b} + ${c}` },
+              { text: `${a - b} + ${c}`, equals: true },
+              { text: `${a - b + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(5, 40);
+          const b = randomInt(2, 30);
+          const c = randomInt(1, a + b - 1);
+          return {
+            tokens: T(`${a} `, ["+", 1], ` ${b} `, ["-", 2], ` ${c}`),
+            answer: a + b - c,
+            hint: [
+              "The addition, because it is the left of the two",
+              "The subtraction"
+            ],
+            working: [
+              { text: `${a} + ${b} - ${c}` },
+              { text: `${a + b} - ${c}`, equals: true },
+              { text: `${a + b - c}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            const subtract = randomInt(1, Math.min(8, quotient + product - 1));
-            const afterAddition = quotient + product;
-            const answer = afterAddition - subtract;
-            const expression =
-              `${dividend} ÷ (${x} + ${y}) + ${base}² × ${multiplier} - ${subtract}`;
+      /* ---------- 8. BODMAS, no powers or roots ---------- */
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${dividend} ` },
-                { t: "÷", order: 3 },
-                { t: ` (${x} ` },
-                { t: "+", order: 1 },
-                { t: ` ${y}) ` },
-                { t: "+", order: 5 },
-                { t: ` ${base}` },
-                { t: "²", order: 2 },
-                { t: " " },
-                { t: "×", order: 4 },
-                { t: ` ${multiplier} ` },
-                { t: "-", order: 6 },
-                { t: ` ${subtract}` }
-              ],
-              hint: [
-                "The addition inside the brackets",
-                `The power, ${base}²`,
-                "The division",
-                "The multiplication",
-                "The addition after the brackets",
-                "The subtraction"
-              ],
-              working: [
-                { text: expression },
-                {
-                  text: `${dividend} ÷ ${bracket} + ${base}² × ${multiplier} - ${subtract}`,
-                  equals: true
-                },
-                {
-                  text: `${base}² = ${base} × ${base} = ${square}`,
-                  note: true
-                },
-                {
-                  text: `${dividend} ÷ ${bracket} + ${square} × ${multiplier} - ${subtract}`,
-                  equals: true
-                },
-                {
-                  text: `${quotient} + ${square} × ${multiplier} - ${subtract}`,
-                  equals: true
-                },
-                {
-                  text: `${quotient} + ${product} - ${subtract}`,
-                  equals: true
-                },
-                { text: `${afterAddition} - ${subtract}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          }
-        ];
-      }
+      const bodmasPool = [
+        () => {
+          const x = randomInt(2, 6);
+          const y = randomInt(2, 6);
+          const bracket = x + y;
+          const quotient = randomInt(2, 10);
+          const dividend = bracket * quotient;
+          const add = randomInt(2, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` (${x} `,
+              ["+", 1],
+              ` ${y}) `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: quotient + add,
+            hint: [
+              "The addition inside the brackets",
+              "The division",
+              "The addition after the brackets"
+            ],
+            working: [
+              { text: `${dividend} ÷ (${x} + ${y}) + ${add}` },
+              { text: `${dividend} ÷ ${bracket} + ${add}`, equals: true },
+              { text: `${quotient} + ${add}`, equals: true },
+              { text: `${quotient + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const y = randomInt(2, 6);
+          const bracket = randomInt(2, 6);
+          const x = y + bracket;
+          const quotient = randomInt(2, 10);
+          const dividend = bracket * quotient;
+          const add = randomInt(2, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` (${x} `,
+              ["-", 1],
+              ` ${y}) `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: quotient + add,
+            hint: [
+              "The subtraction inside the brackets",
+              "The division",
+              "The addition after the brackets"
+            ],
+            working: [
+              { text: `${dividend} ÷ (${x} - ${y}) + ${add}` },
+              { text: `${dividend} ÷ ${bracket} + ${add}`, equals: true },
+              { text: `${quotient} + ${add}`, equals: true },
+              { text: `${quotient + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const x = randomInt(2, 9);
+          const y = randomInt(2, 9);
+          const bracket = x + y;
+          const multiplier = randomInt(2, 6);
+          const product = bracket * multiplier;
+          const subtract = randomInt(1, Math.min(20, product - 1));
+          return {
+            tokens: T(
+              `(${x} `,
+              ["+", 1],
+              ` ${y}) `,
+              ["×", 2],
+              ` ${multiplier} `,
+              ["-", 3],
+              ` ${subtract}`
+            ),
+            answer: product - subtract,
+            hint: [
+              "The addition inside the brackets",
+              "The multiplication",
+              "The subtraction"
+            ],
+            working: [
+              { text: `(${x} + ${y}) × ${multiplier} - ${subtract}` },
+              { text: `${bracket} × ${multiplier} - ${subtract}`, equals: true },
+              { text: `${product} - ${subtract}`, equals: true },
+              { text: `${product - subtract}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const last = randomInt(2, 9);
+          const second = randomInt(2, 5);
+          const first = randomInt(2, 6);
+          const middle = last * second;
+          const dividend = middle * first;
+          const add = randomInt(2, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 1],
+              ` ${first} `,
+              ["÷", 2],
+              ` ${second} `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: last + add,
+            hint: [
+              "The first division, because the two divisions work left to right",
+              "The second division",
+              "The addition"
+            ],
+            working: [
+              { text: `${dividend} ÷ ${first} ÷ ${second} + ${add}` },
+              { text: `${middle} ÷ ${second} + ${add}`, equals: true },
+              { text: `${last} + ${add}`, equals: true },
+              { text: `${last + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 9);
+          const b = randomInt(2, 9);
+          const product = a * b;
+          const subtract = randomInt(1, product - 1);
+          const add = randomInt(1, 15);
+          return {
+            tokens: T(
+              `${a} `,
+              ["×", 1],
+              ` ${b} `,
+              ["-", 2],
+              ` ${subtract} `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: product - subtract + add,
+            hint: ["The multiplication", "The subtraction", "The addition"],
+            working: [
+              { text: `${a} × ${b} - ${subtract} + ${add}` },
+              { text: `${product} - ${subtract} + ${add}`, equals: true },
+              { text: `${product - subtract} + ${add}`, equals: true },
+              { text: `${product - subtract + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 20);
+          const b = randomInt(2, 9);
+          const c = randomInt(2, 9);
+          const product = b * c;
+          const subtract = randomInt(1, Math.min(20, a + product - 1));
+          return {
+            tokens: T(
+              `${a} `,
+              ["+", 2],
+              ` ${b} `,
+              ["×", 1],
+              ` ${c} `,
+              ["-", 3],
+              ` ${subtract}`
+            ),
+            answer: a + product - subtract,
+            hint: ["The multiplication", "The addition", "The subtraction"],
+            working: [
+              { text: `${a} + ${b} × ${c} - ${subtract}` },
+              { text: `${a} + ${product} - ${subtract}`, equals: true },
+              { text: `${a + product} - ${subtract}`, equals: true },
+              { text: `${a + product - subtract}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const x = randomInt(2, 5);
+          const y = randomInt(2, 5);
+          const bracket = x * y;
+          const quotient = randomInt(2, 9);
+          const dividend = bracket * quotient;
+          const add = randomInt(2, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` (${x} `,
+              ["×", 1],
+              ` ${y}) `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: quotient + add,
+            hint: [
+              "The multiplication inside the brackets",
+              "The division",
+              "The addition"
+            ],
+            working: [
+              { text: `${dividend} ÷ (${x} × ${y}) + ${add}` },
+              { text: `${dividend} ÷ ${bracket} + ${add}`, equals: true },
+              { text: `${quotient} + ${add}`, equals: true },
+              { text: `${quotient + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const c = randomInt(2, 7);
+          const d = randomInt(2, 7);
+          const product = c * d;
+          const a = randomInt(15, 50);
+          const b = randomInt(1, a - 1);
+          return {
+            tokens: T(
+              `${a} `,
+              ["-", 2],
+              ` ${b} `,
+              ["+", 3],
+              ` ${c} `,
+              ["×", 1],
+              ` ${d}`
+            ),
+            answer: a - b + product,
+            hint: ["The multiplication", "The subtraction", "The addition"],
+            working: [
+              { text: `${a} - ${b} + ${c} × ${d}` },
+              { text: `${a} - ${b} + ${product}`, equals: true },
+              { text: `${a - b} + ${product}`, equals: true },
+              { text: `${a - b + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const x = randomInt(2, 5);
+          const y = randomInt(2, 5);
+          const bracket = x + y;
+          const quotient = randomInt(2, 8);
+          const dividend = bracket * quotient;
+          const multiplier = randomInt(2, 4);
+          const product = quotient * multiplier;
+          const subtract = randomInt(1, Math.min(15, product - 1));
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` (${x} `,
+              ["+", 1],
+              ` ${y}) `,
+              ["×", 3],
+              ` ${multiplier} `,
+              ["-", 4],
+              ` ${subtract}`
+            ),
+            answer: product - subtract,
+            hint: [
+              "The addition inside the brackets",
+              "The division",
+              "The multiplication",
+              "The subtraction"
+            ],
+            working: [
+              {
+                text: `${dividend} ÷ (${x} + ${y}) × ${multiplier} - ${subtract}`
+              },
+              {
+                text: `${dividend} ÷ ${bracket} × ${multiplier} - ${subtract}`,
+                equals: true
+              },
+              { text: `${quotient} × ${multiplier} - ${subtract}`, equals: true },
+              { text: `${product} - ${subtract}`, equals: true },
+              { text: `${product - subtract}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const divisor = randomInt(2, 6);
+          const quotient = randomInt(2, 9);
+          const dividend = divisor * quotient;
+          const multiplier = randomInt(2, 4);
+          const product = quotient * multiplier;
+          const add = randomInt(1, 12);
+          const subtract = randomInt(1, Math.min(15, product + add - 1));
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 1],
+              ` ${divisor} `,
+              ["×", 2],
+              ` ${multiplier} `,
+              ["+", 3],
+              ` ${add} `,
+              ["-", 4],
+              ` ${subtract}`
+            ),
+            answer: product + add - subtract,
+            hint: [
+              "The division, because it is the left of the two",
+              "The multiplication",
+              "The addition",
+              "The subtraction"
+            ],
+            working: [
+              {
+                text: `${dividend} ÷ ${divisor} × ${multiplier} + ${add} - ${subtract}`
+              },
+              {
+                text: `${quotient} × ${multiplier} + ${add} - ${subtract}`,
+                equals: true
+              },
+              { text: `${product} + ${add} - ${subtract}`, equals: true },
+              { text: `${product + add} - ${subtract}`, equals: true },
+              { text: `${product + add - subtract}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-      // Explains a step that lands below zero. The wording is deliberately
-      // about distance rather than rules: the recorded slip is computing
-      // 5 - 12 as -6, an off-by-one from counting the gap wrongly, so the
-      // note names the gap.
-      const crossesZero = (from, take) =>
-        `${from} - ${take} = ${from - take}, because ${take} is ` +
-        `${take - from} more than ${from}`;
+      /* ---------- 9. BODMAS with powers and roots ---------- */
 
-      // Negative numbers only. Divisions still resolve to whole numbers,
-      // roots are still perfect squares. Every shape here has at least one
-      // step that lands below zero, and several finish below zero too, so
-      // a positive answer is never a safe guess.
-      function negativeGenerators() {
-        return [
-          // Subtraction crossing zero, then an addition back towards it.
-          // Doing the addition first gives a different answer, so this
-          // catches the belief that additions come last.
-          () => {
-            const a = randomInt(3, 15);
-            const b = a + randomInt(2, 18);
-            const c = randomInt(1, 14);
-            const afterSubtraction = a - b;
-            const answer = afterSubtraction + c;
-            const expression = `${a} - ${b} + ${c}`;
+      const ordersPool = [
+        () => {
+          const base = randomInt(2, 5);
+          const square = base * base;
+          const multiplier = randomInt(2, 5);
+          const add = randomInt(2, 15);
+          const product = square * multiplier;
+          return {
+            tokens: T(
+              `${add} `,
+              ["+", 3],
+              ` ${base}`,
+              ["²", 1, true],
+              " ",
+              ["×", 2],
+              ` ${multiplier}`
+            ),
+            answer: add + product,
+            hint: [`The power, ${base}²`, "The multiplication", "The addition"],
+            working: [
+              { text: `${add} + ${base}² × ${multiplier}` },
+              { text: powerNote(base, 2), note: true },
+              { text: `${add} + ${square} × ${multiplier}`, equals: true },
+              { text: `${add} + ${product}`, equals: true },
+              { text: `${add + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const base = randomInt(2, 3);
+          const cube = base * base * base;
+          const divisor = randomInt(2, 6);
+          const quotient = randomInt(4, 12);
+          const dividend = divisor * quotient;
+          const subtract = randomInt(1, quotient - 1);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` ${divisor} `,
+              ["-", 3],
+              ` ${subtract} `,
+              ["+", 4],
+              ` ${base}`,
+              ["³", 1, true]
+            ),
+            answer: quotient - subtract + cube,
+            hint: [
+              `The power, ${base}³`,
+              "The division",
+              "The subtraction",
+              "The addition"
+            ],
+            working: [
+              { text: `${dividend} ÷ ${divisor} - ${subtract} + ${base}³` },
+              { text: powerNote(base, 3), note: true },
+              {
+                text: `${dividend} ÷ ${divisor} - ${subtract} + ${cube}`,
+                equals: true
+              },
+              { text: `${quotient} - ${subtract} + ${cube}`, equals: true },
+              { text: `${quotient - subtract} + ${cube}`, equals: true },
+              { text: `${quotient - subtract + cube}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const item = pick(smallSquares);
+          const multiplier = randomInt(2, 5);
+          const add = randomInt(2, 12);
+          const product = item.root * multiplier;
+          return {
+            tokens: T(
+              `${add} `,
+              ["+", 3],
+              " ",
+              ["√", 1],
+              [`${item.square} `, null, true],
+              ["×", 2],
+              ` ${multiplier}`
+            ),
+            answer: add + product,
+            hint: [
+              `The root, √${item.square}`,
+              "The multiplication",
+              "The addition"
+            ],
+            working: [
+              { text: `${add} + √${item.square} × ${multiplier}` },
+              { text: rootNote(item.root, item.square), note: true },
+              { text: `${add} + ${item.root} × ${multiplier}`, equals: true },
+              { text: `${add} + ${product}`, equals: true },
+              { text: `${add + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const item = pick(squareTable.slice(1, 8));
+          const a = randomInt(2, item.square - 2);
+          const b = item.square - a;
+          const multiplier = randomInt(2, 4);
+          const add = randomInt(2, 10);
+          const product = item.root * multiplier;
+          return {
+            tokens: T(
+              `${add} `,
+              ["+", 4],
+              " ",
+              ["√", 2],
+              [`(${a} `, null, true],
+              ["+", 1],
+              ` ${b}) `,
+              ["×", 3],
+              ` ${multiplier}`
+            ),
+            answer: add + product,
+            hint: [
+              "The addition inside the brackets",
+              `The root, √(${a} + ${b})`,
+              "The multiplication",
+              "The addition outside the root"
+            ],
+            working: [
+              { text: `${add} + √(${a} + ${b}) × ${multiplier}` },
+              { text: `${add} + √${item.square} × ${multiplier}`, equals: true },
+              { text: rootNote(item.root, item.square), note: true },
+              { text: `${add} + ${item.root} × ${multiplier}`, equals: true },
+              { text: `${add} + ${product}`, equals: true },
+              { text: `${add + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const x = randomInt(2, 5);
+          const y = randomInt(2, 5);
+          const bracket = x + y;
+          const quotient = randomInt(4, 12);
+          const dividend = bracket * quotient;
+          const base = randomInt(2, 4);
+          const square = base * base;
+          const multiplier = randomInt(2, 3);
+          const product = square * multiplier;
+          const subtract = randomInt(1, Math.min(8, quotient + product - 1));
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 3],
+              ` (${x} `,
+              ["+", 1],
+              ` ${y}) `,
+              ["+", 5],
+              ` ${base}`,
+              ["²", 2, true],
+              " ",
+              ["×", 4],
+              ` ${multiplier} `,
+              ["-", 6],
+              ` ${subtract}`
+            ),
+            answer: quotient + product - subtract,
+            hint: [
+              "The addition inside the brackets",
+              `The power, ${base}²`,
+              "The division",
+              "The multiplication",
+              "The addition after the brackets",
+              "The subtraction"
+            ],
+            working: [
+              {
+                text: `${dividend} ÷ (${x} + ${y}) + ${base}² × ${multiplier} - ${subtract}`
+              },
+              {
+                text: `${dividend} ÷ ${bracket} + ${base}² × ${multiplier} - ${subtract}`,
+                equals: true
+              },
+              { text: powerNote(base, 2), note: true },
+              {
+                text: `${dividend} ÷ ${bracket} + ${square} × ${multiplier} - ${subtract}`,
+                equals: true
+              },
+              {
+                text: `${quotient} + ${square} × ${multiplier} - ${subtract}`,
+                equals: true
+              },
+              { text: `${quotient} + ${product} - ${subtract}`, equals: true },
+              { text: `${quotient + product} - ${subtract}`, equals: true },
+              { text: `${quotient + product - subtract}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const base = randomInt(2, 5);
+          const square = base * base;
+          const item = pick(smallSquares);
+          const multiplier = randomInt(2, 4);
+          const product = item.root * multiplier;
+          return {
+            tokens: T(
+              `${base}`,
+              ["²", 1, true],
+              " ",
+              ["+", 4],
+              " ",
+              ["√", 2],
+              [`${item.square} `, null, true],
+              ["×", 3],
+              ` ${multiplier}`
+            ),
+            answer: square + product,
+            hint: [
+              `The power, ${base}², because the two Orders work left to right`,
+              `The root, √${item.square}`,
+              "The multiplication",
+              "The addition"
+            ],
+            working: [
+              { text: `${base}² + √${item.square} × ${multiplier}` },
+              { text: powerNote(base, 2), note: true },
+              { text: rootNote(item.root, item.square), note: true },
+              {
+                text: `${square} + ${item.root} × ${multiplier}`,
+                equals: true
+              },
+              { text: `${square} + ${product}`, equals: true },
+              { text: `${square + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const base = randomInt(2, 5);
+          const square = base * base;
+          const quotient = randomInt(2, 9);
+          const dividend = square * quotient;
+          const add = randomInt(2, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` ${base}`,
+              ["²", 1, true],
+              " ",
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: quotient + add,
+            hint: [`The power, ${base}²`, "The division", "The addition"],
+            working: [
+              { text: `${dividend} ÷ ${base}² + ${add}` },
+              { text: powerNote(base, 2), note: true },
+              { text: `${dividend} ÷ ${square} + ${add}`, equals: true },
+              { text: `${quotient} + ${add}`, equals: true },
+              { text: `${quotient + add}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${a} ` },
-                { t: "-", order: 1 },
-                { t: ` ${b} ` },
-                { t: "+", order: 2 },
-                { t: ` ${c}` }
-              ],
-              hint: [
-                "The subtraction, because it comes first from the left",
-                "The addition"
-              ],
-              working: [
-                { text: expression },
-                { text: crossesZero(a, b), note: true },
-                { text: `${afterSubtraction} + ${c}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      /* ---------- 10. BODMAS below zero ---------- */
 
-          // Multiplication resolves to something larger than the number in
-          // front of it, so the subtraction goes below zero.
-          () => {
-            const b = randomInt(3, 9);
-            const c = randomInt(3, 9);
-            const product = b * c;
-            const a = randomInt(2, product - 2);
-            const answer = a - product;
-            const expression = `${a} - ${b} × ${c}`;
+      const negativesPool = [
+        () => {
+          const a = randomInt(3, 15);
+          const b = a + randomInt(2, 18);
+          const c = randomInt(1, 14);
+          return {
+            tokens: T(`${a} `, ["-", 1], ` ${b} `, ["+", 2], ` ${c}`),
+            answer: a - b + c,
+            hint: [
+              "The subtraction, because it comes first from the left",
+              "The addition"
+            ],
+            working: [
+              { text: `${a} - ${b} + ${c}` },
+              { text: crossesZero(a, b), note: true },
+              { text: `${a - b} + ${c}`, equals: true },
+              { text: `${a - b + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const b = randomInt(3, 9);
+          const c = randomInt(3, 9);
+          const product = b * c;
+          const a = randomInt(2, product - 2);
+          return {
+            tokens: T(`${a} `, ["-", 2], ` ${b} `, ["×", 1], ` ${c}`),
+            answer: a - product,
+            hint: ["The multiplication", "The subtraction"],
+            working: [
+              { text: `${a} - ${b} × ${c}` },
+              { text: `${a} - ${product}`, equals: true },
+              { text: crossesZero(a, product), note: true },
+              { text: `${a - product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const divisor = randomInt(2, 6);
+          const quotient = randomInt(2, 9);
+          const dividend = divisor * quotient;
+          const subtract = quotient + randomInt(2, 15);
+          const add = randomInt(1, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 1],
+              ` ${divisor} `,
+              ["-", 2],
+              ` ${subtract} `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: quotient - subtract + add,
+            hint: ["The division", "The subtraction", "The addition"],
+            working: [
+              { text: `${dividend} ÷ ${divisor} - ${subtract} + ${add}` },
+              { text: `${quotient} - ${subtract} + ${add}`, equals: true },
+              { text: crossesZero(quotient, subtract), note: true },
+              { text: `${quotient - subtract} + ${add}`, equals: true },
+              { text: `${quotient - subtract + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const base = randomInt(3, 6);
+          const square = base * base;
+          const a = randomInt(2, square - 2);
+          const add = randomInt(1, 15);
+          return {
+            tokens: T(
+              `${a} `,
+              ["-", 2],
+              ` ${base}`,
+              ["²", 1, true],
+              " ",
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: a - square + add,
+            hint: [`The power, ${base}²`, "The subtraction", "The addition"],
+            working: [
+              { text: `${a} - ${base}² + ${add}` },
+              { text: powerNote(base, 2), note: true },
+              { text: `${a} - ${square} + ${add}`, equals: true },
+              { text: crossesZero(a, square), note: true },
+              { text: `${a - square} + ${add}`, equals: true },
+              { text: `${a - square + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 9);
+          const b = randomInt(2, 9);
+          const product = a * b;
+          const subtract = product + randomInt(2, 20);
+          const add = randomInt(1, 15);
+          return {
+            tokens: T(
+              `${a} `,
+              ["×", 1],
+              ` ${b} `,
+              ["-", 2],
+              ` ${subtract} `,
+              ["+", 3],
+              ` ${add}`
+            ),
+            answer: product - subtract + add,
+            hint: ["The multiplication", "The subtraction", "The addition"],
+            working: [
+              { text: `${a} × ${b} - ${subtract} + ${add}` },
+              { text: `${product} - ${subtract} + ${add}`, equals: true },
+              { text: crossesZero(product, subtract), note: true },
+              { text: `${product - subtract} + ${add}`, equals: true },
+              { text: `${product - subtract + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const x = randomInt(2, 6);
+          const y = randomInt(2, 6);
+          const bracket = x + y;
+          const quotient = randomInt(2, 8);
+          const dividend = bracket * quotient;
+          const subtract = quotient + randomInt(2, 14);
+          const add = randomInt(1, 12);
+          return {
+            tokens: T(
+              `${dividend} `,
+              ["÷", 2],
+              ` (${x} `,
+              ["+", 1],
+              ` ${y}) `,
+              ["-", 3],
+              ` ${subtract} `,
+              ["+", 4],
+              ` ${add}`
+            ),
+            answer: quotient - subtract + add,
+            hint: [
+              "The addition inside the brackets",
+              "The division",
+              "The subtraction",
+              "The addition after the brackets"
+            ],
+            working: [
+              { text: `${dividend} ÷ (${x} + ${y}) - ${subtract} + ${add}` },
+              {
+                text: `${dividend} ÷ ${bracket} - ${subtract} + ${add}`,
+                equals: true
+              },
+              { text: `${quotient} - ${subtract} + ${add}`, equals: true },
+              { text: crossesZero(quotient, subtract), note: true },
+              { text: `${quotient - subtract} + ${add}`, equals: true },
+              { text: `${quotient - subtract + add}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const item = pick(smallSquares);
+          const multiplier = randomInt(2, 4);
+          const product = item.root * multiplier;
+          const a = randomInt(2, product - 2);
+          const add = randomInt(1, 12);
+          return {
+            tokens: T(
+              `${a} `,
+              ["-", 3],
+              " ",
+              ["√", 1],
+              [`${item.square} `, null, true],
+              ["×", 2],
+              ` ${multiplier} `,
+              ["+", 4],
+              ` ${add}`
+            ),
+            answer: a - product + add,
+            hint: [
+              `The root, √${item.square}`,
+              "The multiplication",
+              "The subtraction",
+              "The addition"
+            ],
+            working: [
+              { text: `${a} - √${item.square} × ${multiplier} + ${add}` },
+              { text: rootNote(item.root, item.square), note: true },
+              {
+                text: `${a} - ${item.root} × ${multiplier} + ${add}`,
+                equals: true
+              },
+              { text: `${a} - ${product} + ${add}`, equals: true },
+              { text: crossesZero(a, product), note: true },
+              { text: `${a - product} + ${add}`, equals: true },
+              { text: `${a - product + add}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${a} ` },
-                { t: "-", order: 2 },
-                { t: ` ${b} ` },
-                { t: "×", order: 1 },
-                { t: ` ${c}` }
-              ],
-              hint: ["The multiplication", "The subtraction"],
-              working: [
-                { text: expression },
-                { text: `${a} - ${product}`, equals: true },
-                { text: crossesZero(a, product), note: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      /* ---------- 11. BODMAS with halves and quarters ---------- */
 
-          // Division first, then a subtraction that crosses zero, then an
-          // addition. Three steps to carry, which is where transcription
-          // tends to slip.
-          () => {
-            const divisor = randomInt(2, 6);
-            const quotient = randomInt(2, 9);
-            const dividend = divisor * quotient;
-            const subtract = quotient + randomInt(2, 15);
-            const add = randomInt(1, 12);
-            const afterSubtraction = quotient - subtract;
-            const answer = afterSubtraction + add;
-            const expression = `${dividend} ÷ ${divisor} - ${subtract} + ${add}`;
+      const oddNumber = (min, max) => randomInt(min, max) * 2 + 1;
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${dividend} ` },
-                { t: "÷", order: 1 },
-                { t: ` ${divisor} ` },
-                { t: "-", order: 2 },
-                { t: ` ${subtract} ` },
-                { t: "+", order: 3 },
-                { t: ` ${add}` }
-              ],
-              hint: ["The division", "The subtraction", "The addition"],
-              working: [
-                { text: expression },
-                { text: `${quotient} - ${subtract} + ${add}`, equals: true },
-                { text: crossesZero(quotient, subtract), note: true },
-                { text: `${afterSubtraction} + ${add}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      const decimalsPool = [
+        () => {
+          const a = oddNumber(2, 12);
+          const b = randomInt(2, 15);
+          return {
+            tokens: T(`${a} `, ["÷", 1], ` 2 `, ["+", 2], ` ${b}`),
+            answer: a / 2 + b,
+            hint: ["The division", "The addition"],
+            working: [
+              { text: `${a} ÷ 2 + ${b}` },
+              { text: divideNote(a, 2), note: true },
+              { text: `${a / 2} + ${b}`, equals: true },
+              { text: `${a / 2 + b}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = oddNumber(2, 12);
+          const b = randomInt(2, 20);
+          return {
+            tokens: T(`${a} `, ["÷", 1], ` 2 `, ["-", 2], ` ${b}`),
+            answer: a / 2 - b,
+            hint: ["The division", "The subtraction"],
+            working: [
+              { text: `${a} ÷ 2 - ${b}` },
+              { text: divideNote(a, 2), note: true },
+              { text: `${a / 2} - ${b}`, equals: true },
+              { text: crossesZero(a / 2, b), note: true },
+              { text: `${a / 2 - b}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 12);
+          const b = oddNumber(1, 6);
+          const c = randomInt(2, 8);
+          const product = (b / 2) * c;
+          return {
+            tokens: T(
+              `${a} `,
+              ["+", 3],
+              ` ${b} `,
+              ["÷", 1],
+              ` 2 `,
+              ["×", 2],
+              ` ${c}`
+            ),
+            answer: a + product,
+            hint: [
+              "The division, because it is the left of the two",
+              "The multiplication",
+              "The addition"
+            ],
+            working: [
+              { text: `${a} + ${b} ÷ 2 × ${c}` },
+              { text: divideNote(b, 2), note: true },
+              { text: `${a} + ${b / 2} × ${c}`, equals: true },
+              { text: `${a} + ${product}`, equals: true },
+              { text: `${a + product}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = oddNumber(1, 8);
+          const base = randomInt(2, 4);
+          const square = base * base;
+          const b = randomInt(2, 18);
+          return {
+            tokens: T(
+              `${a} `,
+              ["÷", 2],
+              ` 2 `,
+              ["+", 3],
+              ` ${base}`,
+              ["²", 1, true],
+              " ",
+              ["-", 4],
+              ` ${b}`
+            ),
+            answer: a / 2 + square - b,
+            hint: [
+              `The power, ${base}²`,
+              "The division",
+              "The addition",
+              "The subtraction"
+            ],
+            working: [
+              { text: `${a} ÷ 2 + ${base}² - ${b}` },
+              { text: powerNote(base, 2), note: true },
+              { text: `${a} ÷ 2 + ${square} - ${b}`, equals: true },
+              { text: divideNote(a, 2), note: true },
+              { text: `${a / 2} + ${square} - ${b}`, equals: true },
+              { text: `${a / 2 + square} - ${b}`, equals: true },
+              { text: `${a / 2 + square - b}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(5, 30);
+          let b = randomInt(5, 40);
+          if (b % 4 === 0) b += 1;
+          return {
+            tokens: T(`${a} `, ["-", 2], ` ${b} `, ["÷", 1], ` 4`),
+            answer: a - b / 4,
+            hint: ["The division", "The subtraction"],
+            working: [
+              { text: `${a} - ${b} ÷ 4` },
+              { text: divideNote(b, 4), note: true },
+              { text: `${a} - ${b / 4}`, equals: true },
+              { text: crossesZero(a, b / 4), note: true },
+              { text: `${a - b / 4}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          let a = randomInt(5, 50);
+          if (a % 4 === 0) a += 1;
+          const b = randomInt(2, 20);
+          const c = randomInt(1, 12);
+          return {
+            tokens: T(
+              `${a} `,
+              ["÷", 1],
+              ` 4 `,
+              ["-", 2],
+              ` ${b} `,
+              ["+", 3],
+              ` ${c}`
+            ),
+            answer: a / 4 - b + c,
+            hint: ["The division", "The subtraction", "The addition"],
+            working: [
+              { text: `${a} ÷ 4 - ${b} + ${c}` },
+              { text: divideNote(a, 4), note: true },
+              { text: `${a / 4} - ${b} + ${c}`, equals: true },
+              { text: crossesZero(a / 4, b), note: true },
+              { text: `${a / 4 - b} + ${c}`, equals: true },
+              { text: `${a / 4 - b + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = randomInt(2, 9);
+          let b = randomInt(2, 9);
+          if ((a * b) % 4 === 0) b += 1;
+          const product = a * b;
+          const c = randomInt(1, 15);
+          return {
+            tokens: T(
+              `${a} `,
+              ["×", 1],
+              ` ${b} `,
+              ["÷", 2],
+              ` 4 `,
+              ["+", 3],
+              ` ${c}`
+            ),
+            answer: product / 4 + c,
+            hint: [
+              "The multiplication, because it is the left of the two",
+              "The division",
+              "The addition"
+            ],
+            working: [
+              { text: `${a} × ${b} ÷ 4 + ${c}` },
+              { text: `${product} ÷ 4 + ${c}`, equals: true },
+              { text: divideNote(product, 4), note: true },
+              { text: `${product / 4} + ${c}`, equals: true },
+              { text: `${product / 4 + c}`, equals: true }
+            ]
+          };
+        },
+        () => {
+          const a = oddNumber(1, 8);
+          const cube = 8;
+          const product = (a / 2) * cube;
+          const b = randomInt(2, 40);
+          return {
+            tokens: T(
+              `${a} `,
+              ["÷", 2],
+              ` 2 `,
+              ["×", 3],
+              ` 2`,
+              ["³", 1, true],
+              " ",
+              ["-", 4],
+              ` ${b}`
+            ),
+            answer: product - b,
+            hint: [
+              "The power, 2³",
+              "The division, because it is the left of the two",
+              "The multiplication",
+              "The subtraction"
+            ],
+            working: [
+              { text: `${a} ÷ 2 × 2³ - ${b}` },
+              { text: powerNote(2, 3), note: true },
+              { text: `${a} ÷ 2 × ${cube} - ${b}`, equals: true },
+              { text: divideNote(a, 2), note: true },
+              { text: `${a / 2} × ${cube} - ${b}`, equals: true },
+              { text: `${product} - ${b}`, equals: true },
+              { text: crossesZero(product, b), note: true },
+              { text: `${product - b}`, equals: true }
+            ]
+          };
+        }
+      ];
 
-          // A power larger than the number in front of it. The expansion
-          // line is kept, because reading 4² as 4 × 2 and then crossing
-          // zero puts two separate slips in one question.
-          () => {
-            const base = randomInt(3, 6);
-            const square = base * base;
-            const a = randomInt(2, square - 2);
-            const add = randomInt(1, 15);
-            const afterSubtraction = a - square;
-            const answer = afterSubtraction + add;
-            const expression = `${a} - ${base}² + ${add}`;
+      /* ---------- the drill ---------- */
 
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${a} ` },
-                { t: "-", order: 2 },
-                { t: ` ${base}` },
-                { t: "²", order: 1 },
-                { t: " " },
-                { t: "+", order: 3 },
-                { t: ` ${add}` }
-              ],
-              hint: [`The power, ${base}²`, "The subtraction", "The addition"],
-              working: [
-                { text: expression },
-                { text: `${base}² = ${base} × ${base} = ${square}`, note: true },
-                { text: `${a} - ${square} + ${add}`, equals: true },
-                { text: crossesZero(a, square), note: true },
-                { text: `${afterSubtraction} + ${add}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
+      // One behaviour for every section. Which parts are wired up is decided
+      // by which elements the section actually contains, so a simple drill
+      // and a full BODMAS drill answer, score and reveal in the same way.
+      function setupDrill({ prefix, levels, inputModes }) {
+        const el = (suffix) => document.getElementById(`${prefix}-${suffix}`);
 
-          // Multiplication at the front, so the first step is a large
-          // positive number that the subtraction then takes below zero.
-          () => {
-            const a = randomInt(2, 9);
-            const b = randomInt(2, 9);
-            const product = a * b;
-            const subtract = product + randomInt(2, 20);
-            const add = randomInt(1, 15);
-            const afterSubtraction = product - subtract;
-            const answer = afterSubtraction + add;
-            const expression = `${a} × ${b} - ${subtract} + ${add}`;
-
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${a} ` },
-                { t: "×", order: 1 },
-                { t: ` ${b} ` },
-                { t: "-", order: 2 },
-                { t: ` ${subtract} ` },
-                { t: "+", order: 3 },
-                { t: ` ${add}` }
-              ],
-              hint: ["The multiplication", "The subtraction", "The addition"],
-              working: [
-                { text: expression },
-                { text: `${product} - ${subtract} + ${add}`, equals: true },
-                { text: crossesZero(product, subtract), note: true },
-                { text: `${afterSubtraction} + ${add}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
-
-          // Brackets first, then division, then below zero. The bracket is
-          // there to keep the earlier priorities in play rather than
-          // letting this section become a subtraction drill.
-          () => {
-            const x = randomInt(2, 6);
-            const y = randomInt(2, 6);
-            const bracket = x + y;
-            const quotient = randomInt(2, 8);
-            const dividend = bracket * quotient;
-            const subtract = quotient + randomInt(2, 14);
-            const add = randomInt(1, 12);
-            const afterSubtraction = quotient - subtract;
-            const answer = afterSubtraction + add;
-            const expression =
-              `${dividend} ÷ (${x} + ${y}) - ${subtract} + ${add}`;
-
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${dividend} ` },
-                { t: "÷", order: 2 },
-                { t: ` (${x} ` },
-                { t: "+", order: 1 },
-                { t: ` ${y}) ` },
-                { t: "-", order: 3 },
-                { t: ` ${subtract} ` },
-                { t: "+", order: 4 },
-                { t: ` ${add}` }
-              ],
-              hint: [
-                "The addition inside the brackets",
-                "The division",
-                "The subtraction",
-                "The addition after the brackets"
-              ],
-              working: [
-                { text: expression },
-                {
-                  text: `${dividend} ÷ ${bracket} - ${subtract} + ${add}`,
-                  equals: true
-                },
-                { text: `${quotient} - ${subtract} + ${add}`, equals: true },
-                { text: crossesZero(quotient, subtract), note: true },
-                { text: `${afterSubtraction} + ${add}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          },
-
-          // A root, so Orders stays in the mix here as well as in the
-          // simple test.
-          () => {
-            const item = pick(perfectSquares.slice(1, 8));
-            const multiplier = randomInt(2, 4);
-            const product = item.root * multiplier;
-            const a = randomInt(2, product - 2);
-            const add = randomInt(1, 12);
-            const afterSubtraction = a - product;
-            const answer = afterSubtraction + add;
-            const expression = `${a} - √${item.square} × ${multiplier} + ${add}`;
-
-            return {
-              text: `${expression} = ?`,
-              answer,
-              tokens: [
-                { t: `${a} ` },
-                { t: "-", order: 3 },
-                { t: " " },
-                { t: "√", order: 1 },
-                { t: `${item.square} ` },
-                { t: "×", order: 2 },
-                { t: ` ${multiplier} ` },
-                { t: "+", order: 4 },
-                { t: ` ${add}` }
-              ],
-              hint: [
-                `The root, √${item.square}`,
-                "The multiplication",
-                "The subtraction",
-                "The addition"
-              ],
-              working: [
-                { text: expression },
-                {
-                  text: `√${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
-                  note: true
-                },
-                {
-                  text: `${a} - ${item.root} × ${multiplier} + ${add}`,
-                  equals: true
-                },
-                { text: `${a} - ${product} + ${add}`, equals: true },
-                { text: crossesZero(a, product), note: true },
-                { text: `${afterSubtraction} + ${add}`, equals: true },
-                { text: `${answer}`, equals: true }
-              ]
-            };
-          }
-        ];
-      }
-
-
-      // Both BODMAS tests share this behaviour. The only differences are the
-      // element ids, which generator pool is used, and whether a sign button
-      // is present, so the whole thing is set up once and called twice.
-      function setupBodmasTest({ prefix, generators }) {
-        const form = document.getElementById(`${prefix}-form`);
-        const question = document.getElementById(`${prefix}-question`);
-        const answer = document.getElementById(`${prefix}-answer`);
-        const feedback = document.getElementById(`${prefix}-feedback`);
-        const newButton = document.getElementById(`${prefix}-new`);
-        const working = document.getElementById(`${prefix}-working`);
-        const steps = document.getElementById(`${prefix}-steps`);
-        const hintButton = document.getElementById(`${prefix}-hint`);
-        const hintPanel = document.getElementById(`${prefix}-hint-panel`);
-        const hintSteps = document.getElementById(`${prefix}-hint-steps`);
-        const signButton = document.getElementById(`${prefix}-sign`);
+        const form = el("form");
+        const question = el("question");
+        const answer = el("answer");
+        const feedback = el("feedback");
+        const score = el("score");
+        const newButton = el("new");
+        const hintButton = el("hint");
+        const hintPanel = el("hint-panel");
+        const hintSteps = el("hint-steps");
+        const workingToggle = el("working-toggle");
+        const working = el("working");
+        const steps = el("steps");
+        const signButton = el("sign");
+        const levelInputs = Array.from(
+          form.querySelectorAll(`input[name="${prefix}-level"]`)
+        );
 
         let current = null;
+        let attempts = 0;
+        let asked = 0;
+        let firstTime = 0;
+        let level = 0;
+        // Sticky, because someone who needs the order badges needs them on
+        // every question, not just the one where they asked.
+        let hintOpen = false;
+        const recent = [];
 
-        // The question is built from tokens so that order badges can be
-        // positioned under each operator without changing the expression
-        // itself. Badges sit in their own layer and are hidden from
-        // assistive technology, which reads the plain expression instead.
+        function build() {
+          const generator = pick(levels[level]);
+          const made = generator();
+          made.text =
+            made.tokens.map((token) => token.t).join("") +
+            (made.suffix === undefined ? " = ?" : made.suffix);
+          return made;
+        }
+
+        // Straight random repeats itself quickly, so a question is re-rolled
+        // if it is one of the last ten asked. The buffer is kept short
+        // because the powers and roots drills only have a few dozen
+        // questions in total, and a long buffer would exhaust them.
+        function buildFresh() {
+          for (let i = 0; i < 25; i += 1) {
+            const made = build();
+            if (!recent.includes(made.text)) {
+              recent.push(made.text);
+              if (recent.length > 10) recent.shift();
+              return made;
+            }
+          }
+          return build();
+        }
+
+        function makeToken(token) {
+          if (!token.order) return document.createTextNode(token.t);
+
+          const op = document.createElement("span");
+          op.className = "op";
+          op.append(token.t);
+
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.setAttribute("aria-hidden", "true");
+          badge.textContent = String(token.order);
+
+          op.appendChild(badge);
+          return op;
+        }
+
         function renderQuestion() {
           question.replaceChildren();
 
+          const groups = [];
           for (const token of current.tokens) {
-            if (!token.order) {
-              question.append(token.t);
+            if (token.tight && groups.length) {
+              groups[groups.length - 1].push(token);
+            } else {
+              groups.push([token]);
+            }
+          }
+
+          for (const group of groups) {
+            const nodes = group.map(makeToken);
+
+            if (nodes.length === 1) {
+              question.append(nodes[0]);
               continue;
             }
 
-            const operator = document.createElement("span");
-            operator.className = "op";
-            operator.append(token.t);
-
-            const badge = document.createElement("span");
-            badge.className = "badge";
-            badge.setAttribute("aria-hidden", "true");
-            badge.textContent = String(token.order);
-
-            operator.appendChild(badge);
-            question.appendChild(operator);
+            const run = document.createElement("span");
+            run.className = "nobr";
+            run.append(...nodes);
+            question.append(run);
           }
 
-          question.append(" = ?");
+          question.append(
+            current.suffix === undefined ? " = ?" : current.suffix
+          );
         }
 
-        function hideHint() {
-          question.classList.remove("show-badges");
-          hintPanel.classList.add("hidden");
-          hintSteps.replaceChildren();
-          hintButton.textContent = "Hint to show calculation order";
-        }
+        function applyHint() {
+          if (!hintButton) return;
 
-        function showHint() {
           hintSteps.replaceChildren();
+
+          if (!hintOpen || !current.hint) {
+            question.classList.remove("show-badges");
+            hintPanel.classList.add("hidden");
+            hintButton.textContent = "Show calculation order";
+            return;
+          }
 
           for (const step of current.hint) {
-            const li = document.createElement("li");
-            li.textContent = step;
-            hintSteps.appendChild(li);
+            const item = document.createElement("li");
+            item.textContent = step;
+            hintSteps.appendChild(item);
           }
 
           question.classList.add("show-badges");
@@ -1337,100 +2741,159 @@
           hintButton.textContent = "Hide calculation order";
         }
 
-        function hideWorking() {
-          working.classList.add("hidden");
-          steps.replaceChildren();
+        function setWorkingOpen(open) {
+          if (!working) return;
+          working.classList.toggle("hidden", !open);
+          workingToggle.textContent = open ? "Hide working" : "Show working";
         }
 
-        function showWorking() {
+        function renderWorking() {
+          if (!working) return;
+
           steps.replaceChildren();
 
           for (const step of current.working) {
-            const p = document.createElement("p");
+            const line = document.createElement("p");
             const code = document.createElement("code");
 
             code.textContent = step.equals ? `= ${step.text}` : step.text;
+            if (step.note) line.classList.add("working-note");
 
-            if (step.note) {
-              p.classList.add("working-note");
-            }
-
-            p.appendChild(code);
-            steps.appendChild(p);
+            line.appendChild(code);
+            steps.appendChild(line);
           }
-
-          working.classList.remove("hidden");
         }
 
-        function newQuestion(moveFocus = false) {
-          const generator = pick(generators());
-          current = generator();
+        function updateScore() {
+          score.textContent = asked
+            ? `Right first time: ${firstTime} of ${asked}.`
+            : "";
+        }
+
+        function newQuestion(moveFocus) {
+          current = buildFresh();
+          attempts = 0;
 
           renderQuestion();
-          answer.value = "";
+          applyHint();
           setFeedback(feedback, "");
-          hideHint();
-          hideWorking();
+          answer.value = "";
 
-          if (moveFocus) {
-            answer.focus();
+          if (working) {
+            setWorkingOpen(false);
+            workingToggle.classList.toggle("hidden", !current.working);
+            if (current.working) renderWorking();
           }
+
+          if (moveFocus) answer.focus();
         }
 
         form.addEventListener("submit", (event) => {
           event.preventDefault();
 
-          const userAnswer = normaliseNumber(answer.value);
+          const value = normaliseNumber(answer.value);
 
-          if (userAnswer === null) {
+          if (value === null) {
             setFeedback(feedback, "Enter a number first.");
-            hideWorking();
             answer.focus();
             return;
           }
 
-          showWorking();
+          if (attempts === 0) asked += 1;
+          attempts += 1;
 
-          if (userAnswer === current.answer) {
-            setFeedback(feedback, "Correct.", "pass");
-          } else {
+          const correct = sameNumber(value, current.answer);
+          const hasWorking = Boolean(working && current.working);
+
+          if (correct) {
+            if (attempts === 1) firstTime += 1;
             setFeedback(
               feedback,
-              `Incorrect. The correct answer is ${current.answer}.`,
+              attempts === 1 ? "Correct." : "Correct on the second look.",
+              "pass"
+            );
+          } else if (attempts === 1) {
+            // The answer is deliberately withheld here. Finding your own
+            // slip is the skill this test is for, and the step most often
+            // lost is the easy one straight after the demanding one.
+            setFeedback(
+              feedback,
+              "Not correct. Work back through it one step at a time. The step " +
+                "most often lost is the easy one straight after the hard one.",
               "fail"
             );
             answer.select();
-          }
-        });
-
-        hintButton.addEventListener("click", () => {
-          if (hintPanel.classList.contains("hidden")) {
-            showHint();
           } else {
-            hideHint();
+            setFeedback(
+              feedback,
+              `Not correct. The answer is ${current.answer}.` +
+                (hasWorking ? " The working is below." : ""),
+              "fail"
+            );
+            if (hasWorking) setWorkingOpen(true);
+            answer.select();
           }
+
+          updateScore();
         });
 
-        newButton.addEventListener("click", () => {
-          newQuestion(true);
-        });
+        newButton.addEventListener("click", () => newQuestion(true));
+
+        if (hintButton) {
+          hintButton.addEventListener("click", () => {
+            hintOpen = !hintOpen;
+            applyHint();
+          });
+        }
+
+        if (workingToggle) {
+          workingToggle.addEventListener("click", () => {
+            setWorkingOpen(working.classList.contains("hidden"));
+          });
+        }
 
         // Flips the sign of whatever is in the field, including an empty
         // field, so a minus can be placed before typing as well as after.
         if (signButton) {
           signButton.addEventListener("click", () => {
             const value = answer.value.trim();
-
-            answer.value = value.startsWith("-") ? value.slice(1) : `-${value}`;
+            answer.value = value.startsWith("-")
+              ? value.slice(1)
+              : `-${value}`;
             answer.focus();
+          });
+        }
+
+        for (const input of levelInputs) {
+          input.addEventListener("change", () => {
+            level = Number(input.value);
+            if (inputModes) answer.setAttribute("inputmode", inputModes[level]);
+            recent.length = 0;
+            newQuestion(false);
           });
         }
 
         newQuestion(false);
       }
 
-      setupBodmasTest({ prefix: "bodmas", generators: bodmasGenerators });
-      setupBodmasTest({ prefix: "negatives", generators: negativeGenerators });
+      setupDrill({ prefix: "addition", levels: [additionPool] });
+      setupDrill({
+        prefix: "subtraction",
+        levels: [subtractionAboveZero, subtractionBelowZero]
+      });
+      setupDrill({ prefix: "times", levels: [timesPool] });
+      setupDrill({
+        prefix: "division",
+        levels: [divisionWhole, divisionFractions],
+        inputModes: ["numeric", "decimal"]
+      });
+      setupDrill({ prefix: "squares", levels: [squaresPool] });
+      setupDrill({ prefix: "roots", levels: [rootsPool] });
+      setupDrill({ prefix: "twoops", levels: [twoOpsPool] });
+      setupDrill({ prefix: "bodmas", levels: [bodmasPool] });
+      setupDrill({ prefix: "orders", levels: [ordersPool] });
+      setupDrill({ prefix: "negatives", levels: [negativesPool] });
+      setupDrill({ prefix: "decimals", levels: [decimalsPool] });
     })();
   </script>
 </body>
