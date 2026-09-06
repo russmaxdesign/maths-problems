@@ -240,6 +240,24 @@
     .instructions {
       margin-bottom: 1.5rem;
     }
+
+    /* The sign button sits beside the field rather than under it, so the
+       two read as one control. Baseline alignment keeps them level even
+       when the button text and the input text differ in size. */
+    .answer-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* On iOS a numeric keypad has no minus key, so a negative answer would
+       be impossible to enter without this. It is a button rather than a
+       toggle state, because it acts on the value in the field. */
+    .sign-button {
+      margin-top: 0;
+      padding: 0.5rem 0.7rem;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -247,8 +265,9 @@
     <h1>Maths problems</h1>
 
     <p class="note">
-      Work through one small step at a time. BODMAS questions are deliberately controlled:
-      divisions resolve to whole numbers, roots use perfect squares, and powers stay small.
+      Work through one small step at a time. Questions are deliberately controlled:
+      divisions resolve to whole numbers, roots use perfect squares, and powers stay
+      small. Only the last test goes below zero.
     </p>
 
     <section aria-labelledby="addition-heading">
@@ -352,6 +371,68 @@
       </form>
     </section>
 
+    <section aria-labelledby="negatives-heading">
+      <h2 id="negatives-heading">BODMAS test with negative numbers</h2>
+
+      <p class="note">
+        Same rule, same order of priority. The difference is that a subtraction can
+        now take you below zero, and the working carries on from there. Every number
+        is still whole.
+      </p>
+
+      <p class="note">
+        Two things to watch. A subtraction still happens in its left to right place,
+        not last. And once a number is negative, adding to it moves it back towards
+        zero rather than away from it.
+      </p>
+
+      <form id="negatives-form">
+        <p id="negatives-question" class="question"></p>
+
+        <button type="button" id="negatives-hint" class="link-button">
+          Hint to show calculation order
+        </button>
+
+        <div id="negatives-hint-panel" class="hint hidden" aria-live="polite">
+          <h3>Order of operations</h3>
+          <ol id="negatives-hint-steps"></ol>
+        </div>
+
+        <label for="negatives-answer">Your answer</label>
+        <div class="answer-row">
+          <input
+            id="negatives-answer"
+            name="negatives-answer"
+            inputmode="numeric"
+            autocomplete="off"
+            aria-describedby="negatives-question negatives-hint-note negatives-feedback"
+          >
+          <button
+            type="button"
+            id="negatives-sign"
+            class="sign-button"
+            aria-label="Change the sign of your answer"
+          >±</button>
+        </div>
+
+        <p id="negatives-hint-note" class="note">
+          Use the ± button, or type a minus sign before the number.
+        </p>
+
+        <div>
+          <button type="submit">Review</button>
+          <button type="button" id="negatives-new">New question</button>
+        </div>
+
+        <div id="negatives-working" class="working hidden">
+          <h3>Working</h3>
+          <div id="negatives-steps" class="working-steps"></div>
+        </div>
+
+        <p id="negatives-feedback" class="feedback" aria-live="polite"></p>
+      </form>
+    </section>
+
     <section id="names" aria-labelledby="names-heading">
       <h2 id="names-heading">BODMAS, BIDMAS, BEDMAS and PEMDAS</h2>
 
@@ -429,8 +510,19 @@
 
       const pick = (items) => items[randomInt(0, items.length - 1)];
 
+      // People write negatives in more than one way. A Unicode minus or an
+      // en dash arrives from phone keyboards and from pasted text, and the
+      // bracketed form is a common way to keep the sign attached to the
+      // number. All three mean the same thing, so all three are accepted.
       const normaliseNumber = (value) => {
-        const trimmed = value.trim();
+        let trimmed = value.trim().replace(/[\u2212\u2013\u2014]/g, "-");
+
+        const bracketed = trimmed.match(/^\((-?[\d.]+)\)$/);
+        if (bracketed) {
+          trimmed = bracketed[1];
+        }
+
+        trimmed = trimmed.replace(/\s+/g, "");
         if (trimmed === "") return null;
 
         const number = Number(trimmed);
@@ -889,148 +981,456 @@
         ];
       }
 
-      const bodmasForm = document.getElementById("bodmas-form");
-      const bodmasQuestion = document.getElementById("bodmas-question");
-      const bodmasAnswer = document.getElementById("bodmas-answer");
-      const bodmasFeedback = document.getElementById("bodmas-feedback");
-      const bodmasNew = document.getElementById("bodmas-new");
-      const bodmasWorking = document.getElementById("bodmas-working");
-      const bodmasSteps = document.getElementById("bodmas-steps");
-      const bodmasHint = document.getElementById("bodmas-hint");
-      const bodmasHintPanel = document.getElementById("bodmas-hint-panel");
-      const bodmasHintSteps = document.getElementById("bodmas-hint-steps");
+      // Explains a step that lands below zero. The wording is deliberately
+      // about distance rather than rules: the recorded slip is computing
+      // 5 - 12 as -6, an off-by-one from counting the gap wrongly, so the
+      // note names the gap.
+      const crossesZero = (from, take) =>
+        `${from} - ${take} = ${from - take}, because ${take} is ` +
+        `${take - from} more than ${from}`;
 
-      let currentBodmas = null;
+      // Negative numbers only. Divisions still resolve to whole numbers,
+      // roots are still perfect squares. Every shape here has at least one
+      // step that lands below zero, and several finish below zero too, so
+      // a positive answer is never a safe guess.
+      function negativeGenerators() {
+        return [
+          // Subtraction crossing zero, then an addition back towards it.
+          // Doing the addition first gives a different answer, so this
+          // catches the belief that additions come last.
+          () => {
+            const a = randomInt(3, 15);
+            const b = a + randomInt(2, 18);
+            const c = randomInt(1, 14);
+            const afterSubtraction = a - b;
+            const answer = afterSubtraction + c;
+            const expression = `${a} - ${b} + ${c}`;
 
-      // The question is built from tokens so that order badges can be
-      // positioned under each operator without changing the expression
-      // itself. Badges sit in their own layer and are hidden from
-      // assistive technology, which reads the plain expression instead.
-      function renderQuestion() {
-        bodmasQuestion.replaceChildren();
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${a} ` },
+                { t: "-", order: 1 },
+                { t: ` ${b} ` },
+                { t: "+", order: 2 },
+                { t: ` ${c}` }
+              ],
+              hint: [
+                "The subtraction, because it comes first from the left",
+                "The addition"
+              ],
+              working: [
+                { text: expression },
+                { text: crossesZero(a, b), note: true },
+                { text: `${afterSubtraction} + ${c}`, equals: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          },
 
-        for (const token of currentBodmas.tokens) {
-          if (!token.order) {
-            bodmasQuestion.append(token.t);
-            continue;
+          // Multiplication resolves to something larger than the number in
+          // front of it, so the subtraction goes below zero.
+          () => {
+            const b = randomInt(3, 9);
+            const c = randomInt(3, 9);
+            const product = b * c;
+            const a = randomInt(2, product - 2);
+            const answer = a - product;
+            const expression = `${a} - ${b} × ${c}`;
+
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${a} ` },
+                { t: "-", order: 2 },
+                { t: ` ${b} ` },
+                { t: "×", order: 1 },
+                { t: ` ${c}` }
+              ],
+              hint: ["The multiplication", "The subtraction"],
+              working: [
+                { text: expression },
+                { text: `${a} - ${product}`, equals: true },
+                { text: crossesZero(a, product), note: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          },
+
+          // Division first, then a subtraction that crosses zero, then an
+          // addition. Three steps to carry, which is where transcription
+          // tends to slip.
+          () => {
+            const divisor = randomInt(2, 6);
+            const quotient = randomInt(2, 9);
+            const dividend = divisor * quotient;
+            const subtract = quotient + randomInt(2, 15);
+            const add = randomInt(1, 12);
+            const afterSubtraction = quotient - subtract;
+            const answer = afterSubtraction + add;
+            const expression = `${dividend} ÷ ${divisor} - ${subtract} + ${add}`;
+
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${dividend} ` },
+                { t: "÷", order: 1 },
+                { t: ` ${divisor} ` },
+                { t: "-", order: 2 },
+                { t: ` ${subtract} ` },
+                { t: "+", order: 3 },
+                { t: ` ${add}` }
+              ],
+              hint: ["The division", "The subtraction", "The addition"],
+              working: [
+                { text: expression },
+                { text: `${quotient} - ${subtract} + ${add}`, equals: true },
+                { text: crossesZero(quotient, subtract), note: true },
+                { text: `${afterSubtraction} + ${add}`, equals: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          },
+
+          // A power larger than the number in front of it. The expansion
+          // line is kept, because reading 4² as 4 × 2 and then crossing
+          // zero puts two separate slips in one question.
+          () => {
+            const base = randomInt(3, 6);
+            const square = base * base;
+            const a = randomInt(2, square - 2);
+            const add = randomInt(1, 15);
+            const afterSubtraction = a - square;
+            const answer = afterSubtraction + add;
+            const expression = `${a} - ${base}² + ${add}`;
+
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${a} ` },
+                { t: "-", order: 2 },
+                { t: ` ${base}` },
+                { t: "²", order: 1 },
+                { t: " " },
+                { t: "+", order: 3 },
+                { t: ` ${add}` }
+              ],
+              hint: [`The power, ${base}²`, "The subtraction", "The addition"],
+              working: [
+                { text: expression },
+                { text: `${base}² = ${base} × ${base} = ${square}`, note: true },
+                { text: `${a} - ${square} + ${add}`, equals: true },
+                { text: crossesZero(a, square), note: true },
+                { text: `${afterSubtraction} + ${add}`, equals: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          },
+
+          // Multiplication at the front, so the first step is a large
+          // positive number that the subtraction then takes below zero.
+          () => {
+            const a = randomInt(2, 9);
+            const b = randomInt(2, 9);
+            const product = a * b;
+            const subtract = product + randomInt(2, 20);
+            const add = randomInt(1, 15);
+            const afterSubtraction = product - subtract;
+            const answer = afterSubtraction + add;
+            const expression = `${a} × ${b} - ${subtract} + ${add}`;
+
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${a} ` },
+                { t: "×", order: 1 },
+                { t: ` ${b} ` },
+                { t: "-", order: 2 },
+                { t: ` ${subtract} ` },
+                { t: "+", order: 3 },
+                { t: ` ${add}` }
+              ],
+              hint: ["The multiplication", "The subtraction", "The addition"],
+              working: [
+                { text: expression },
+                { text: `${product} - ${subtract} + ${add}`, equals: true },
+                { text: crossesZero(product, subtract), note: true },
+                { text: `${afterSubtraction} + ${add}`, equals: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          },
+
+          // Brackets first, then division, then below zero. The bracket is
+          // there to keep the earlier priorities in play rather than
+          // letting this section become a subtraction drill.
+          () => {
+            const x = randomInt(2, 6);
+            const y = randomInt(2, 6);
+            const bracket = x + y;
+            const quotient = randomInt(2, 8);
+            const dividend = bracket * quotient;
+            const subtract = quotient + randomInt(2, 14);
+            const add = randomInt(1, 12);
+            const afterSubtraction = quotient - subtract;
+            const answer = afterSubtraction + add;
+            const expression =
+              `${dividend} ÷ (${x} + ${y}) - ${subtract} + ${add}`;
+
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${dividend} ` },
+                { t: "÷", order: 2 },
+                { t: ` (${x} ` },
+                { t: "+", order: 1 },
+                { t: ` ${y}) ` },
+                { t: "-", order: 3 },
+                { t: ` ${subtract} ` },
+                { t: "+", order: 4 },
+                { t: ` ${add}` }
+              ],
+              hint: [
+                "The addition inside the brackets",
+                "The division",
+                "The subtraction",
+                "The addition after the brackets"
+              ],
+              working: [
+                { text: expression },
+                {
+                  text: `${dividend} ÷ ${bracket} - ${subtract} + ${add}`,
+                  equals: true
+                },
+                { text: `${quotient} - ${subtract} + ${add}`, equals: true },
+                { text: crossesZero(quotient, subtract), note: true },
+                { text: `${afterSubtraction} + ${add}`, equals: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          },
+
+          // A root, so Orders stays in the mix here as well as in the
+          // simple test.
+          () => {
+            const item = pick(perfectSquares.slice(1, 8));
+            const multiplier = randomInt(2, 4);
+            const product = item.root * multiplier;
+            const a = randomInt(2, product - 2);
+            const add = randomInt(1, 12);
+            const afterSubtraction = a - product;
+            const answer = afterSubtraction + add;
+            const expression = `${a} - √${item.square} × ${multiplier} + ${add}`;
+
+            return {
+              text: `${expression} = ?`,
+              answer,
+              tokens: [
+                { t: `${a} ` },
+                { t: "-", order: 3 },
+                { t: " " },
+                { t: "√", order: 1 },
+                { t: `${item.square} ` },
+                { t: "×", order: 2 },
+                { t: ` ${multiplier} ` },
+                { t: "+", order: 4 },
+                { t: ` ${add}` }
+              ],
+              hint: [
+                `The root, √${item.square}`,
+                "The multiplication",
+                "The subtraction",
+                "The addition"
+              ],
+              working: [
+                { text: expression },
+                {
+                  text: `√${item.square} = ${item.root}, because ${item.root} × ${item.root} = ${item.square}`,
+                  note: true
+                },
+                {
+                  text: `${a} - ${item.root} × ${multiplier} + ${add}`,
+                  equals: true
+                },
+                { text: `${a} - ${product} + ${add}`, equals: true },
+                { text: crossesZero(a, product), note: true },
+                { text: `${afterSubtraction} + ${add}`, equals: true },
+                { text: `${answer}`, equals: true }
+              ]
+            };
+          }
+        ];
+      }
+
+
+      // Both BODMAS tests share this behaviour. The only differences are the
+      // element ids, which generator pool is used, and whether a sign button
+      // is present, so the whole thing is set up once and called twice.
+      function setupBodmasTest({ prefix, generators }) {
+        const form = document.getElementById(`${prefix}-form`);
+        const question = document.getElementById(`${prefix}-question`);
+        const answer = document.getElementById(`${prefix}-answer`);
+        const feedback = document.getElementById(`${prefix}-feedback`);
+        const newButton = document.getElementById(`${prefix}-new`);
+        const working = document.getElementById(`${prefix}-working`);
+        const steps = document.getElementById(`${prefix}-steps`);
+        const hintButton = document.getElementById(`${prefix}-hint`);
+        const hintPanel = document.getElementById(`${prefix}-hint-panel`);
+        const hintSteps = document.getElementById(`${prefix}-hint-steps`);
+        const signButton = document.getElementById(`${prefix}-sign`);
+
+        let current = null;
+
+        // The question is built from tokens so that order badges can be
+        // positioned under each operator without changing the expression
+        // itself. Badges sit in their own layer and are hidden from
+        // assistive technology, which reads the plain expression instead.
+        function renderQuestion() {
+          question.replaceChildren();
+
+          for (const token of current.tokens) {
+            if (!token.order) {
+              question.append(token.t);
+              continue;
+            }
+
+            const operator = document.createElement("span");
+            operator.className = "op";
+            operator.append(token.t);
+
+            const badge = document.createElement("span");
+            badge.className = "badge";
+            badge.setAttribute("aria-hidden", "true");
+            badge.textContent = String(token.order);
+
+            operator.appendChild(badge);
+            question.appendChild(operator);
           }
 
-          const operator = document.createElement("span");
-          operator.className = "op";
-          operator.append(token.t);
-
-          const badge = document.createElement("span");
-          badge.className = "badge";
-          badge.setAttribute("aria-hidden", "true");
-          badge.textContent = String(token.order);
-
-          operator.appendChild(badge);
-          bodmasQuestion.appendChild(operator);
+          question.append(" = ?");
         }
 
-        bodmasQuestion.append(" = ?");
-      }
-
-      function hideHint() {
-        bodmasQuestion.classList.remove("show-badges");
-        bodmasHintPanel.classList.add("hidden");
-        bodmasHintSteps.replaceChildren();
-        bodmasHint.textContent = "Hint to show calculation order";
-      }
-
-      function showHint() {
-        bodmasHintSteps.replaceChildren();
-
-        for (const step of currentBodmas.hint) {
-          const li = document.createElement("li");
-          li.textContent = step;
-          bodmasHintSteps.appendChild(li);
+        function hideHint() {
+          question.classList.remove("show-badges");
+          hintPanel.classList.add("hidden");
+          hintSteps.replaceChildren();
+          hintButton.textContent = "Hint to show calculation order";
         }
 
-        bodmasQuestion.classList.add("show-badges");
-        bodmasHintPanel.classList.remove("hidden");
-        bodmasHint.textContent = "Hide calculation order";
-      }
+        function showHint() {
+          hintSteps.replaceChildren();
 
-      function hideWorking() {
-        bodmasWorking.classList.add("hidden");
-        bodmasSteps.replaceChildren();
-      }
-
-      function showWorking() {
-        bodmasSteps.replaceChildren();
-
-        for (const step of currentBodmas.working) {
-          const p = document.createElement("p");
-          const code = document.createElement("code");
-
-          code.textContent = step.equals ? `= ${step.text}` : step.text;
-
-          if (step.note) {
-            p.classList.add("working-note");
+          for (const step of current.hint) {
+            const li = document.createElement("li");
+            li.textContent = step;
+            hintSteps.appendChild(li);
           }
 
-          p.appendChild(code);
-          bodmasSteps.appendChild(p);
+          question.classList.add("show-badges");
+          hintPanel.classList.remove("hidden");
+          hintButton.textContent = "Hide calculation order";
         }
 
-        bodmasWorking.classList.remove("hidden");
-      }
-
-      function newBodmasQuestion(moveFocus = false) {
-        const generator = pick(bodmasGenerators());
-        currentBodmas = generator();
-
-        renderQuestion();
-        bodmasAnswer.value = "";
-        setFeedback(bodmasFeedback, "");
-        hideHint();
-        hideWorking();
-
-        if (moveFocus) {
-          bodmasAnswer.focus();
-        }
-      }
-
-      bodmasForm.addEventListener("submit", (event) => {
-        event.preventDefault();
-
-        const userAnswer = normaliseNumber(bodmasAnswer.value);
-
-        if (userAnswer === null) {
-          setFeedback(bodmasFeedback, "Enter a number first.");
-          hideWorking();
-          bodmasAnswer.focus();
-          return;
+        function hideWorking() {
+          working.classList.add("hidden");
+          steps.replaceChildren();
         }
 
-        showWorking();
+        function showWorking() {
+          steps.replaceChildren();
 
-        if (userAnswer === currentBodmas.answer) {
-          setFeedback(bodmasFeedback, "Correct.", "pass");
-        } else {
-          setFeedback(
-            bodmasFeedback,
-            `Incorrect. The correct answer is ${currentBodmas.answer}.`,
-            "fail"
-          );
-          bodmasAnswer.select();
+          for (const step of current.working) {
+            const p = document.createElement("p");
+            const code = document.createElement("code");
+
+            code.textContent = step.equals ? `= ${step.text}` : step.text;
+
+            if (step.note) {
+              p.classList.add("working-note");
+            }
+
+            p.appendChild(code);
+            steps.appendChild(p);
+          }
+
+          working.classList.remove("hidden");
         }
-      });
 
-      bodmasHint.addEventListener("click", () => {
-        if (bodmasHintPanel.classList.contains("hidden")) {
-          showHint();
-        } else {
+        function newQuestion(moveFocus = false) {
+          const generator = pick(generators());
+          current = generator();
+
+          renderQuestion();
+          answer.value = "";
+          setFeedback(feedback, "");
           hideHint();
+          hideWorking();
+
+          if (moveFocus) {
+            answer.focus();
+          }
         }
-      });
 
-      bodmasNew.addEventListener("click", () => {
-        newBodmasQuestion(true);
-      });
+        form.addEventListener("submit", (event) => {
+          event.preventDefault();
 
-      newBodmasQuestion(false);
+          const userAnswer = normaliseNumber(answer.value);
+
+          if (userAnswer === null) {
+            setFeedback(feedback, "Enter a number first.");
+            hideWorking();
+            answer.focus();
+            return;
+          }
+
+          showWorking();
+
+          if (userAnswer === current.answer) {
+            setFeedback(feedback, "Correct.", "pass");
+          } else {
+            setFeedback(
+              feedback,
+              `Incorrect. The correct answer is ${current.answer}.`,
+              "fail"
+            );
+            answer.select();
+          }
+        });
+
+        hintButton.addEventListener("click", () => {
+          if (hintPanel.classList.contains("hidden")) {
+            showHint();
+          } else {
+            hideHint();
+          }
+        });
+
+        newButton.addEventListener("click", () => {
+          newQuestion(true);
+        });
+
+        // Flips the sign of whatever is in the field, including an empty
+        // field, so a minus can be placed before typing as well as after.
+        if (signButton) {
+          signButton.addEventListener("click", () => {
+            const value = answer.value.trim();
+
+            answer.value = value.startsWith("-") ? value.slice(1) : `-${value}`;
+            answer.focus();
+          });
+        }
+
+        newQuestion(false);
+      }
+
+      setupBodmasTest({ prefix: "bodmas", generators: bodmasGenerators });
+      setupBodmasTest({ prefix: "negatives", generators: negativeGenerators });
     })();
   </script>
 </body>
