@@ -484,7 +484,7 @@
       <h2 id="times-heading">Times tables</h2>
 
       <p class="note">
-        Both numbers are twelve or under.
+        Both numbers are between three and twelve.
       </p>
 
       <form id="times-form">
@@ -1250,8 +1250,8 @@
 
       const timesPool = [
         () => {
-          const a = randomInt(1, 12);
-          const b = randomInt(1, 12);
+          const a = randomInt(3, 12);
+          const b = randomInt(3, 12);
           return { tokens: T(`${a} × ${b}`), answer: a * b };
         }
       ];

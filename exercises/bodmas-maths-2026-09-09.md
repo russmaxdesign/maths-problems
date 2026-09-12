@@ -84,13 +84,70 @@ It comes out in lots of places, but especially during tests. These sessions forc
 
 ---
 
-### Copy and paste strategy
+## Documenting types of errors
 
-As the exercises became more complex, I noticed that many errors happened when carrying a correct number from one line to the next. Digits could be swapped, changed or lost even when the calculation itself was correct.
+This list has gradually grown over more than 200 tests.
 
-To reduce this risk, I began copying and pasting numbers wherever possible rather than retyping them. I then edit only the part of the number that needs to change. If necessary, I also edit the number through smaller, easier intermediate steps.
+These categories overlap. They are not intended as mutually exclusive diagnoses; they describe recurring failure patterns that benefit from different safeguards. For example, several are types of transcription errors. 
 
-The principle is simple: preserve what is already correct, and reduce unnecessary opportunities for transcription errors.
+### 1. Concept error
+Choosing the wrong operation or rule.
+
+Safeguard: 
+- slow BODMAS scan when needed.
+
+### 2. Arithmetic slip
+
+One example I caught when checking: 
+= **8** × 4 - 15 = **36** - 15 
+I realised and changed to: 
+= **8** × 4 - 15 = **32** - 15
+
+After working through powers, negatives, nested brackets, simple maths sometimes fails. This is puzzling and deeply frustrating.
+
+Safeguard: 
+- explicitly write the micro-calculation, even when it feels obvious
+- verify the result before carrying it forward.
+
+### 3. Transcription slip
+
+If I see a number like 795, and have to re-type it, my brain may say "957". I've observed this closely recently. It has always been there, dyscalculia in action. But being aware of it is interesting. Two things may happen in this situation. Even though my brain says "957", I will often still type "795". But sometimes I will type the version my brain says. And I cannot predict which event will occur. It could depend on focus, tiredness etc.
+
+Safeguard: 
+- copy/paste instead of retyping
+- visually compare digits when typing is unavoidable.
+
+### 4. Sign loss:
+
+In one test, I did the following before checking:
+
+```
+5 × (8 - 11) = ?
+= 5 × **(-3)** = ?
+(-3) + (-3) + (-3) + (-3) + (-3) = (-15) <<-- working out negatives
+= 15
+```
+I'd spent all this time learning and understanding, only to make a basic mistake at the end.
+
+Safeguard: 
+- keep negatives bracketed,
+- copy the final value
+- do a specific sign check.
+
+### 5. Operator loss/swap
+e.g. - becomes +.
+Safeguard: compare the operator before and after each line; copy unchanged structure where possible.
+
+### 6. Carry-forward error
+e.g. correct result calculated, wrong value moved to the next line.
+
+Safeguard: 
+- copy the previous line and edit only the part that changes.
+
+### 7. Completion/letting-go error
+e.g. the working is correct, but the final answer is entered incorrectly or unchecked.
+Safeguard:
+a fixed close-out step: copy result → write Answer → compare with previous line.
 
 ---
 
@@ -2161,8 +2218,8 @@ Fail.
 435 - 8 = 427
 
 427 - 214 = ?
-427 - 200 - 227
-227 - 10 - 217
+427 - 200 - 227 <<-- typing error: did not use = sign, did not affect outcome
+227 - 10 - 217 <<-- typing error: did not use = sign, did not affect outcome
 217 - 4 = 213
 ```
 
@@ -2197,6 +2254,16 @@ Fail.
 536 + 50 = 586
 586 + 6 = 592
 ```
+
+### Copy and paste strategy
+
+As the exercises became more complex, I noticed that many errors happened when carrying a correct number from one line to the next. Digits could be swapped, changed or lost even when the calculation itself was correct.
+
+To reduce this risk, from this point on, I began copying and pasting numbers wherever possible rather than retyping them. I then edit only the part of the number that needs to change. If necessary, I also edit the number through smaller, easier intermediate steps.
+
+The aims: 
+- preserve what is already correct
+- reduce risk of transcription errors
 
 ### Test 196:
 ```
@@ -2432,9 +2499,326 @@ Fail.
 
 ---
 
+## Five more for practice
+
+### Test 211
+```
+672 - 248 + 135 = ?
+
+672 - 248 = ?
+672 - 200 = 472
+472 - 40 = 432
+432 - 8 = 424
+
+424 + 135 = ?
+424 + 100 = 524
+524 + 35 = 559
+```
+
+### Test 212
+```
+438 + 276 - 319 = ?
+
+438 + 276 = ?
+438 + 200 = 638
+638 + 70 = 708
+708 + 6 = 714
+
+714 - 319 = ?
+714 - 300 = 414
+414 - 10 = 404 <<-- almost made a mistake at this line by not copy/pasting and mistyping
+404 - 9 = 395
+```
+
+### Test 213
+```
+905 - 367 - 218 = ?
+
+905 - 367 = ?
+905 - 300 = 605
+605 - 60 = 545
+545 - 7 = 538
+
+538 - 218 = ?
+538 - 200 = 338
+338 - 18 = 320
+```
+
+### Test 214
+```
+584 + 329 - 467 = ?
+
+584 + 329 = ?
+584 + 300 = 884
+884 + 20 = 904
+904 + 9 = 913
+
+913 - 467 = ?
+913 - 400 = 513
+513 - 60 = 453
+453 - 7 = 446
+```
+
+### Test 215
+```
+761 - 284 + 196 = ?
+
+761 - 284 = ?
+761 - 200 = 561 <<-- struggled a bit with focus, initially added rather than subtracted
+561 - 80 = 481
+481 - 4 = 477
+
+477 + 196 = ?
+477 + 100 = 577
+577 + 90 = 667
+667 + 6 = 673
+```
+
+## Adding divisions into the mix
+
+### Test 216
+```
+84 ÷ 7 × 3 + 5 = ?
+= **12** × 3 + 5
+= **36** + 5
+= 41
+```
+
+### Test 217
+```
+6 × 8 ÷ 4 - 9 = ?
+= **48** ÷ 4 - 9 
+= **12** - 9
+= 3 
+```
+
+### Test 218
+```
+90 ÷ 5 - 7 + 12 = ?
+90 × 5 → (5 × 5 = 25) + (5 × 5 = 25) + (5 × 5 = 25) + (3 × 5 = 15) = 18 <<-- note wrong operator
+= **18** - 7 + 12 
+= **11** + 12 
+= 23
+```
+
+### Test 219
+```
+7 × 6 - 20 + 9 = ?
+= **42** - 20 + 9
+= **22** + 9
+= 31
+```
+
+### Test 220
+```
+72 ÷ 8 × 5 - 11 = ?
+= **9** × 5 - 11 
+= **45** - 11 
+= 34
+```
+
+### Test 221
+```
+5 + 3² × 4 - 8 = ?
+3 x 3 = 9
+= 5 + **9** × 4 - 8
+= 5 + **36** - 8
+= **41** - 8
+= 33
+```
+
+### Test 222
+```
+48 ÷ 2³ + 7 - 10 = ?
+2 x 2 x 2 = 8
+= 48 ÷ **8** + 7 - 10 
+= **6** + 7 - 10 
+= **13** - 10 
+= 3
+```
+
+### Test 223
+```
+6 + √64 × 3 - 20 = ?
+= 6 + **8** × 3 - 20
+= 6 + **24** - 20
+= **30** - 20
+= 10
+```
+
+### Test 224
+```
+40 ÷ (3 + 2) × 4 - 15 = ?
+= 40 ÷ **5** × 4 - 15
+= **8** × 4 - 15
+= **32** - 15
+= 17
+```
+
+### Test 225
+```
+9 - 4² + 12 = ?
+4 × 4 = 16 <<-- tried to skip this step but fell for 4 × 2 again
+= 9 - **16** + 12
+= **(-7)** + 12
+= 5
+```
+
+---
+
+## 226 – 230: gently push the edge
+
+### Test 226
+```
+5 × (8 - 11) = ?
+= 5 × **(-3)** = ?
+(-3) + (-3) + (-3) + (-3) + (-3) = (-15) <<-- working out negatives
+= (-15)
+```
+
+### Test 227
+```
+20 + 3 × (4 - 9) = ?
+= 20 + 3 × **(-5)**
+(-5) + (-5) + (-5) = (-15) <<-- working out negatives
+= 20 + (-15)
+= 5
+```
+
+### Test 228
+```
+36 ÷ (7 - 3) + 2² = ?
+= 36 ÷ **4** + 2²
+2 x 2 = 4
+= 36 ÷ 4 + **4**
+= **9** + 4
+= 13
+```
+
+### Test 229
+```
+2 × (3 + (4 × 2)) = ? <<-- inner brackets then outer brackets?
+= 2 × (3 + **8**)
+= 2 × **11**
+= 22
+```
+
+### Test 230
+```
+3 × (2 + (7 - 4)) + 5 = ?
+= 3 × (2 + **3**) + 5
+= 3 × **5** + 5
+= **15** + 5
+= 20
+```
+
+---
+
+## Beginnings of division
+
+### Test 231
+```
+8 ÷ 2 = ?
+2 + 2 + 2 + 2 = 8
+Answer: 4
+```
+
+### Test 232
+```
+12 ÷ 3 = ?
+3 + 3 + 3 + 3 = 12
+Answer: 4
+```
+
+### Test 233
+```
+20 ÷ 5 = ?
+5 + 5 + 5 + 5 = 20
+Answer: 4
+```
+
+### Test 234
+```
+24 ÷ 4 = ?
+4 + 4 + 4 + 4 + 4 + 4 = 24
+Answer: 6
+```
+
+### Test 235
+```
+35 ÷ 5 = ?
+5 + 5 + 5 + 5 + 5 + 5 + 5 = 35
+Answer: 7
+```
+
+### Test 236
+```
+42 ÷ 6 = ?
+6 + 6 + 6 + 6 + 6 + 6 + 6 = 42
+Answer: 7
+```
+
+### Test 237
+```
+36 ÷ 4 = ?
+4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 = 36 <<-- getting too long
+Answer: 9
+```
+
+### Test 238
+```
+45 ÷ 5 = ?
+5s are easy to finger count  :)
+Answer: 9
+```
+
+### Test 239
+```
+56 ÷ 7 = ?
+7 x 7 = 49 <<-- known number from times tables
+8 x 7 = 56
+Answer: 9
+```
+
+### Test 240
+```
+72 ÷ 8 = ?
+8 x 8 = 64 <<-- known number from times tables
+9 x 8 = 72
+Answer: 9
+```
+
+### Test 241
+```
+84 ÷ 7 = ?
+10 x 7 = 70 <<-- known number from times tables
+2 x 7 = 14 <<-- known number from times tables
+Answer: 12
+```
+
+### Test 242
+```
+96 ÷ 6 = ?
+5 x 6 = 30 <<-- known number from times tables
+15 x 6 = 90 <<-- add three of these known sets together to get close
+16 x 6 = 96
+Answer: 16
+```
+
+This last set has probably been the most frustratiing of all to complete. BODMAS is a formula. And as long as the maths was friendly, it was just about following 4-5 simple rules. Negative numbers were a bit confusing at first, especially 5 x (-3), but understandable. 
+
+Brackets and nested brackets are also ok.
+
+Divisons have been incredibly hard for my brain. I probably should have tackled multiplications before this concept. So, addition, subtraction, multiplication, division.
+
+I find it very frustrating, looking at a number like 96 and being completely unable to fathom how to divide it by 6. The Jump Strategy felt slow but useful. Each step I could see what to do, sometimes I srruggled with basic addition or subtraction, but division feels on a different level.
+
+At this point, I feel like diverting back to a simpler and fundamental backbone - re-learning times tables. I feel that this would help when glancing at a number.
+
+---
+
 ## Next
 
-- 
 - Two and three number divisions
 - Two and three number multiplications
 - Negatives inside brackets: `5 × (3 - 8)`
