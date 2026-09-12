@@ -1248,10 +1248,25 @@
 
       /* ---------- 3. Times tables ---------- */
 
+      // Operands run from 3 to 12. The four tables kids find hardest are
+      // weighted a little heavier, so the drill leans towards them without
+      // ever dropping the easier tables, which carry useful patterns.
+      const timesWeights = {
+        3: 2, 4: 2, 5: 2,
+        6: 3, 7: 3, 8: 3, 9: 3,
+        10: 2, 11: 2, 12: 2
+      };
+
+      // Expands the weights into a flat list, so pick() can choose evenly
+      // from it: 6 appears three times, 3 appears twice, and so on.
+      const timesOperands = Object.keys(timesWeights).flatMap(
+        (n) => Array(timesWeights[n]).fill(Number(n))
+      );
+
       const timesPool = [
         () => {
-          const a = randomInt(3, 12);
-          const b = randomInt(3, 12);
+          const a = pick(timesOperands);
+          const b = pick(timesOperands);
           return { tokens: T(`${a} × ${b}`), answer: a * b };
         }
       ];
